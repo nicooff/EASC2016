@@ -1,4 +1,5 @@
 *~
+*.easc*
 *.aux
 *.bbl
 *.blg
