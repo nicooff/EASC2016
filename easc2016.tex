@@ -286,7 +286,7 @@ The test cases were run on three different supercomputers, namely Mira from the 
  & Architecture & \# of cores & cores/node & $\alpha$ & $\beta$\\
  \hline
 Mira & IBM BG/Q & $786,432$ & $16$ & $*$ & $*$\\ 
-Titan & Cray XK7 & $299,008$ & $16$ & $*$ & $*$\\ 
+Titan & Cray XK7 & $299,008$ & $16$ & $2.7981 \cdot 10^{-6}$ & $1.4332 \cdot 10^{-9}$\\ 
 Beskow & Cray XC40 & $53,632$ & $32$ & $*$ & $*$\\
 \hline
 \end{tabular}
@@ -296,6 +296,13 @@ Beskow & Cray XC40 & $53,632$ & $32$ & $*$ & $*$\\
 The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receives messages of various sizes between different processors is measured and values of the latency and bandwidth are deduced.
 
 % Show graph with results of the ping pong test?
+% Resized figure
+\begin{figure} \label{fig:alpha_beta_titan}
+\centering
+\includegraphics[width=0.45\textwidth]{./figures/alpha_beta_titan.eps}
+\caption{The ping-pong test on Titan}
+\end{figure}
+
 % Explain that we took minimum values
 % Discuss noise and "randomness" of the results on Cray machines
 
