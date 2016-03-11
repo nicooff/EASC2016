@@ -121,48 +121,49 @@
 % e-mail address with \email.
 %
 % 1st. author
-\alignauthor
-Jing Gong\\
-       \affaddr{*}\\
-       \affaddr{*}\\
-       \affaddr{*}\\
-       \email{*}
-% 2nd. author
+% 1st. author
 \alignauthor
 Oana Marin\\
        \affaddr{*}\\
        \affaddr{*}\\
        \affaddr{*}\\
        \email{*}
-% 3rd. author
+% 2nd. author
 \alignauthor
 Nicolas Offermans\\
        \affaddr{Linn\'{e} Flow Center}\\
        \affaddr{KTH Mechanics, Royal Institute of Technology}\\
        \affaddr{10044 Stockholm, Sweden}\\
        \email{nof@mech.kth.se}
-\and  % use '\and' if you need 'another row' of author names
-% 4th. author
+% 3rd. author
 \alignauthor 
 Adam Peplinski\\
        \affaddr{*}\\
        \affaddr{*}\\
        \affaddr{*}\\
        \email{*}
-% 5th. author
+\and  % use '\and' if you need 'another row' of author names
+% 4th. author
 \alignauthor 
 Michel Schanen\\
        \affaddr{*}\\
        \affaddr{*}\\
        \affaddr{*}\\
        \email{*}
-% 6th. author
+% 5th. author
 \alignauthor 
 Philipp Schlatter\\
        \affaddr{*}\\
        \affaddr{*}\\
        \affaddr{*}\\
        \email{*}
+% 6th. author
+\alignauthor
+Jing Gong\\
+       \affaddr{PDC-HPC}\\
+       \affaddr{KTH, Royal Institute of Technology}\\
+       \affaddr{10044 Stockholm, Sweden}\\
+       \email{gongjing@kth.se}
 }
 % There's nothing stopping you putting the seventh, eighth, etc.
 % author on the opening page (as the 'third row') but we ask,
@@ -178,7 +179,7 @@ Philipp Schlatter\\
 
 \maketitle
 \begin{abstract}
-Strong scaling of the high-order spectral element solver Nek5000 is performed. The test cases correspond to a turbulent flow in a straight pipe at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. Different architectures are studied, namely IBM Blue Gene/Q, Cray XC40 and Cray XK6 supercomputers. A theoretical model for parallel performance is introduced and compared to the numerical results. We also study the effect of the two coarse grid solvers XXT and AMG on the computational time.
+Strong scaling of the high-order spectral element solver Nek5000 is performed. The test cases correspond to a turbulent flow in a straight pipe at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. Different architectures are studied, namely IBM Blue Gene/Q, Cray XC40 and Cray XK7 supercomputers. A theoretical model for parallel performance is introduced and compared to the numerical results. We also study the effect of the two coarse grid solvers XXT and AMG on the computational time.
 \end{abstract}
 
 
