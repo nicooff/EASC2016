@@ -179,7 +179,7 @@ Jing Gong\\
 
 \maketitle
 \begin{abstract}
-Strong scaling of the high-order spectral element solver Nek5000 is performed. The test cases correspond to a turbulent flow in a straight pipe at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. Different architectures are studied, namely IBM Blue Gene/Q, Cray XC40 and Cray XK7 supercomputers. A theoretical model for parallel performance is introduced and compared to the numerical results. We also study the effect of the two coarse grid solvers XXT and AMG on the computational time.
+In this paper, strong scaling and benchmarking of the high-order spectral element solver Nek5000 are performed. The previous extensive benchmarking for Nek5000 was done for terascale computers. This study updates the results to modern computers and assess the ability of the code to run efficiently on the next generation of exascale supercomputers. For several test cases, the main blocks of the code are timed and a sampling tool is use to measure the communication time over a large range of processors. The test cases correspond to a turbulent flow in a straight pipe at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. Different architectures are studied, namely IBM Blue Gene/Q, Cray XC40 and Cray XK7 supercomputers. A theoretical model for parallel performance is introduced and compared to the numerical results. We also study the effect of the two coarse grid solvers XXT and AMG on the computational time.
 \end{abstract}
 
 
@@ -239,7 +239,56 @@ The resolution of partial differential equations (PDE) is common practice nowada
 
 \section{Body}
 
-\subsection{Nek5000}
+\subsection{Measurements}
+
+\subsubsection{Numerical scheme}
+
+We consider the resolution of the Navier-Stokes equations for an incompressible flow and Newtonian fluid
+\begin{align}
+ \nabla \cdot \mathbf{u} & = 0, \label{eqn:NS_continuity}\\
+ \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u \cdot \nabla}) \mathbf{u} & = - \nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} \label{eqn:NS_momentum},
+\end{align}
+where $\mathbf{u}$ is the velocity field and $p$ the thermodynamic pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations (\ref{eqn:NS_continuity}) and (\ref{eqn:NS_momentum}) are called the continuity and momentum equations respectively. The numerical integration of the momentum equation is done explicitely for the nonliean convective terms and implicitely for the viscous and pressure term according to a scheme developped by A. G. Tomboulides \cite{Tomboulides1997}. This method is referred to as $\mathbb{P}_N\mathbb{P}_N$ and leads to the following discrete system of equations for one iteration
+\begin{align}
+ \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
+ \mathbf{h}_i^n & = N(\mathbf{u}_i^n) + B \mathbf{f}_i + ???, \label{eqn:rhs}\\
+ A \delta \mathbf{p}^n & = \nabla \cdot \left[ \left( \sum_{i=1}^3 \frac{-1}{Re} (\nabla \times (\nabla \times \mathbf{u}_i^*)) + B^{-1} \mathbf{h}_i^n \right) \right]\nonumber\\
+ & \quad - A \mathbf{p}^n , \label{eqn:hmhz_pres} \\
+ A \delta \mathbf{u}^{n} & = -A \mathbf{u}^{n} + \mathbf{h}_i^n \label{eqn:hmhz_vel},\\
+ \mathbf{p}^{n+1} &= \mathbf{p}^{n} + \mathbf{\delta p}^{n}, \label{eqn:update_p} \\
+ \mathbf{u}_i^{n+1}& = \mathbf{u}_i^{n} + \mathbf{\delta u}_i^{n}.  \label{eqn:update_u} 
+\end{align}
+The matrices $A$ and $B$ represent the discrete Laplatian operator and the mass matrix respectively. The index $i=1,2,3$ represents the 3 spatial directions $x$, $y$ and $z$. The intermediate velocity $\mathbf{u}_i^*$ is extrapolated using a third order Adams-Bashforth scheme in Equation (\ref{eqn:extrap_vel}). The corresponding coefficients $\beta_k$ are given by $\beta_0 = \frac{23}{12}$, $\beta_1 = \frac{-4}{3}$ and $\beta_2 = \frac{5}{12}$ (??). The term $\mathbf{h}_i^n$ from equation (\ref{eqn:rhs}) contains the nonlinear convective term $N(\mathbf{u}_i^n)$ evaluated explicitely, the external forcing $\mathbf{f}_i$ and ???. Equation (\ref{eqn:hmhz_pres}) is solved using aGeneralized minimal residual method (GMRES), while equation (\ref{eqn:hmhz_vel}) is solved using the conjugate gradient (CG) mehtod. Furthermore, both the pressure and velocity vectors are projected onto a space of previous solutions in order to speed up the convergence of the iterative solvers. Projections occur before and after the iterative solver. %When solving equations (\ref{eqn:hmhz_pres}) and (\ref{eqn:hmhz_vel}), we obtain the corrections for the pressure and the velocity that we can use to update those variables in Equations \ref{eqn:update_p} and \ref{eqn:update_u}.
+
+\subsubsection{Coarse grid solver}
+
+% introduce coarse grid solver for the pressure
+
+\subsubsection{Timers}
+
+Different timers have been placed within the code in order to measure time for the main blocks of the solution. The different timers are
+\begin{itemize}
+ \item \textit{totaltime}: total time spent for all iterations.
+ \item \textit{tmakef}: time to compute $\mathbf{h}_i^n$, i.e.\ the right hand side of equation (\ref{eqn:rhs}).
+ \item \textit{tcrespsp}: time to compute the right hand side of equation (\ref{eqn:hmhz_pres}).
+ \item \textit{tpresproj}: time to solve equation (\ref{eqn:hmhz_pres}) and project the pressure before and after.
+ \item \textit{tpresproj1}: time to project the pressure before the iterative solver.
+ \item \textit{tpresprojhmhz}: time to solve equation (\ref{eqn:hmhz_pres}).
+ \item \textit{tpresproj2}: time to project the pressure after the iterative solver.
+ \item \textit{tvproj}: time to solve equation (\ref{eqn:hmhz_vel}) and project the pressure before and after.
+ \item \textit{tvproj1}: time to project the velocity before the iterative solver.
+ \item \textit{tvprojhmhz}: time to solve equation (\ref{eqn:hmhz_vel}) for all components.
+ \item \textit{tvproj2}: time to project the velocity after the iterative solver.
+ \item \textit{tcoarse}: time for the coarse grid solver for the pressure.
+\end{itemize}
+
+
+
+\subsubsection{Complexities}
+
+% The total time and the time spent in the different parts of the code were computed by measuring the CPU time at appropriate locations in the code. This method is easy to implement, reliable and adds little overhead to the simulations. The measure of the communication time is a trickier task. This is done on Mira using the HPM-sampling tool (? -> add some more info maybe). On the Cray machines, we use the CrayPat performance analysis framework. This tool samples the code during execution at a frequency of $\unit[100]{Hz}$ and reports in which function the sample was found. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. If the number of samples is large enough, statistics is reliable. Furthermore, it induces a low overhead. A profiling procedure, where all function calls are tracked, could also be used but overhead in time is about $50\%$ and the method is therefore rejected.
+% 
+% In practice, each simulation is restarted from a previously computed turbulent solution and is run during $50$ time steps. The projections for velocity and pressure are turned on after $5$ time steps, the number of the previous pressure solutions saved is $20$ and the timers are turned on during the last $20$ time steps. Therefore, heavy input/output is not included and projections are working fully during the measurement period.
 
 % Present system of equations
 % Describe briefly the algorithm behind nek
@@ -248,9 +297,7 @@ The resolution of partial differential equations (PDE) is common practice nowada
 
 \subsection{Test cases}
 
-\subsubsection{Pipe}
-
-The first test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \ref{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
+The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \ref{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
 
 \begin{table}
 \centering
@@ -268,11 +315,14 @@ $1000$ & $37,700$ & $1,264,032$ & $2.184 \times 10^9$\\
 \label{tab:pipe_conf}
 \end{table}
 
-\subsubsection{Rod bundle}
 
 \subsection{Model for parallel performance}
 
-\subsection{Supercomputers}
+\subsection{Results}
+
+% Talk about synchronization?
+
+\subsection{Hardware}
 
 The test cases were run on three different supercomputers, namely Mira from the Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory, USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden. A rapid overview of the characteristics of each computer is summarized in Table \ref{tab:computer_charac}
 
@@ -298,16 +348,6 @@ The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been 
 % Show graph with results of the ping pong test?
 % Explain that we took minimum values
 % Discuss noise and "randomness" of the results on Cray machines
-
-\subsection{Results}
-
-\subsubsection{Timers}
-
-The total time and the time spent in the different parts of the code were computed by measuring the CPU time at appropriate locations in the code. This method is easy to implement, reliable and adds little overhead to the simulations. The measure of the communication time is a trickier task. This is done on Mira using the HPM-sampling tool (? -> add some more info maybe). On the Cray machines, we use the CrayPat performance analysis framework. This tool samples the code during execution at a frequency of $\unit[100]{Hz}$ and reports in which function the sample was found. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. If the number of samples is large enough, statistics is reliable. Furthermore, it induces a low overhead. A profiling procedure, where all function calls are tracked, could also be used but overhead in time is about $50\%$ and the method is therefore rejected.
-
-In practice, each simulation is restarted from a previously computed turbulent solution and is run during $50$ time steps. The projections for velocity and pressure are turned on after $5$ time steps, the number of the previous pressure solutions saved is $20$ and the timers are turned on during the last $20$ time steps. Therefore, heavy input/output is not included and projections are working fully during the measurement period.
-
-% Talk about synchronization?
 
 \subsubsection{Projections}
 % Show improvement due to the new projection method
