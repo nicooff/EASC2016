@@ -239,9 +239,9 @@ The resolution of partial differential equations (PDE) is common practice nowada
 
 \section{Body}
 
-\subsection{Measurements}
+\subsection{Numerical scheme}
 
-\subsubsection{Numerical scheme}
+\subsubsection{Splitting method}
 
 We consider the resolution of the Navier-Stokes equations for an incompressible flow and Newtonian fluid
 \begin{align}
@@ -264,6 +264,8 @@ The matrices $A$ and $B$ represent the discrete Laplatian operator and the mass 
 
 % introduce coarse grid solver for the pressure
 
+\subsection{Measurements}
+
 \subsubsection{Timers}
 
 Different timers have been placed within the code in order to measure time for the main blocks of the solution. The different timers are
@@ -282,9 +284,11 @@ Different timers have been placed within the code in order to measure time for t
  \item \textit{tcoarse}: time for the coarse grid solver for the pressure.
 \end{itemize}
 
+\subsection{Models for parallel performance}
 
+\subsubsection{Computational complexity}
 
-\subsubsection{Complexities}
+\subsubsection{Communication model}
 
 % The total time and the time spent in the different parts of the code were computed by measuring the CPU time at appropriate locations in the code. This method is easy to implement, reliable and adds little overhead to the simulations. The measure of the communication time is a trickier task. This is done on Mira using the HPM-sampling tool (? -> add some more info maybe). On the Cray machines, we use the CrayPat performance analysis framework. This tool samples the code during execution at a frequency of $\unit[100]{Hz}$ and reports in which function the sample was found. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. If the number of samples is large enough, statistics is reliable. Furthermore, it induces a low overhead. A profiling procedure, where all function calls are tracked, could also be used but overhead in time is about $50\%$ and the method is therefore rejected.
 % 
@@ -314,9 +318,6 @@ $1000$ & $37,700$ & $1,264,032$ & $2.184 \times 10^9$\\
 \end{tabular}
 \label{tab:pipe_conf}
 \end{table}
-
-
-\subsection{Model for parallel performance}
 
 \subsection{Results}
 
@@ -349,7 +350,7 @@ The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been 
 % Explain that we took minimum values
 % Discuss noise and "randomness" of the results on Cray machines
 
-\subsubsection{Projections}
+\subsubsection{New projections}
 % Show improvement due to the new projection method
 
 \subsubsection{Strong scaling}
