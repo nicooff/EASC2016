@@ -44,6 +44,13 @@
 % ===============================================================
 %
 % For tracking purposes - this is V2.0 - May 2012
+\newcommand{\refalg}[1]{Algorithm~\ref{#1}}
+\newcommand{\refsec}[1]{Sect.~\ref{#1}}
+\newcommand{\reffig}[1]{Fig.~\ref{#1}}
+\newcommand{\refsubfig}[1]{Fig.~\subref{#1}}
+\newcommand{\reftab}[1]{Table~\ref{#1}}
+\newcommand{\refeqn}[1]{(\ref{#1})}
+\newcommand{\reflst}[1]{Listing~(\ref{#1})}
 
 \documentclass{sig-alternate}
 
@@ -237,9 +244,12 @@ In this paper, strong scaling and benchmarking of the high-order spectral elemen
 
 The resolution of partial differential equations (PDE) is common practice nowadays in the scientific community. However, developing a code that scales linearly on a large number of cores still remains a challenging task. In this paper, we study the behavior of Nek5000, a solver for fluid mechanics and heat transfer problems, on a large number of processors and assess its ability to run efficiently on the next generation of exascale supercomputers. Cite\cite{fischer:scaling} and \cite{tufo:terascale}...
 
-\section{Body}
+\section{Prior Work}
+Link to the complexities in the Fischer paper -> multiplicities
+Explain finite difference link
+\section{Nek}
 
-\subsection{Numerical scheme}
+\subsection{Method}
 
 \subsubsection{Splitting method}
 
@@ -269,11 +279,12 @@ The nonlinear terms have been gathered in operator $N \left( \mathbf{u}^{k} \rig
 % The operators $A$ and $B$ represent the discrete Laplacian operator and the mass matrix respectively. The index $i=1,2,3$ represents the 3 spatial directions $x$, $y$ and $z$. The intermediate velocity $\mathbf{u}_i^*$ is extrapolated using a third order Adams-Bashforth scheme in Equation (\ref{eqn:extrap_vel}). The corresponding coefficients $\beta_k$ are given by $\beta_0 = \frac{23}{12}$, $\beta_1 = \frac{-4}{3}$ and $\beta_2 = \frac{5}{12}$ (??). The term $\mathbf{h}_i^n$ from equation (\ref{eqn:rhs}) contains the nonlinear convective term $N(\mathbf{u}_i^n)$ evaluated explicitely, the external forcing $\mathbf{f}_i$ and ???. Equation (\ref{eqn:hmhz_pres}) is solved using aGeneralized minimal residual method (GMRES), while equation (\ref{eqn:hmhz_vel}) is solved using the conjugate gradient (CG) mehtod. Furthermore, both the pressure and velocity vectors are projected onto a space of previous solutions in order to speed up the convergence of the iterative solvers. Projections occur before and after the 
 % iterative solver. %When solving equations (\ref{eqn:hmhz_pres}) and (\ref{eqn:hmhz_vel}), we obtain the corrections for the pressure and the velocity that we can use to update those variables in Equations \ref{eqn:update_p} and \ref{eqn:update_u}.
 
-\subsubsection{Coarse grid solver}
+%\subsubsection{Coarse grid solver}
 
 % introduce coarse grid solver for the pressure
 
-\subsection{Measurements}
+\subsection{Implementation}
+\subsubsection{Code structure}
 
 \subsubsection{Timers}
 
@@ -291,11 +302,11 @@ Different timers have been placed within the code in order to measure time for t
  \item \textit{tcoarse}: time for the coarse grid solver for the pressure.
 \end{itemize}
 
-\subsection{Models for parallel performance}
+%\subsection{Models for parallel performance}
 
-\subsubsection{Computational complexity}
+%\subsubsection{Computational complexity}
 
-\subsubsection{Communication model}
+%\subsubsection{Communication model}
 
 % The total time and the time spent in the different parts of the code were computed by measuring the CPU time at appropriate locations in the code. This method is easy to implement, reliable and adds little overhead to the simulations. The measure of the communication time is a trickier task. This is done on Mira using the HPM-sampling tool (? -> add some more info maybe). On the Cray machines, we use the CrayPat performance analysis framework. This tool samples the code during execution at a frequency of $\unit[100]{Hz}$ and reports in which function the sample was found. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. If the number of samples is large enough, statistics is reliable. Furthermore, it induces a low overhead. A profiling procedure, where all function calls are tracked, could also be used but overhead in time is about $50\%$ and the method is therefore rejected.
 % 
@@ -306,7 +317,8 @@ Different timers have been placed within the code in order to measure time for t
 % Mention and discuss PN-PN
 % Discuss the two coarse grid solver XXT and AMG
 
-\subsection{Test cases}
+\section{Performance and Scaling Analysis}
+\subsection{Use Case: Pipe}
 
 The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \ref{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
 
@@ -325,8 +337,16 @@ $1000$ & $37,700$ & $1,264,032$ & $2.184 \times 10^9$\\
 \end{tabular}
 \label{tab:pipe_conf}
 \end{table}
+\subsection{Abstractions and Assumptions}
+\label{sec:abstractions}
+\subsubsection{$\alpha$, $\beta$}
+\subsubsection{Imbalance}
+\subsubsection{Weak/Strong Scaling, Efficiency}
+\subsubsection{Cache Misses and Scaling}
+\subsubsection{Partitioning and Imbalance}
 
-\subsection{Results}
+
+\section{Results}
 
 % Talk about synchronization?
 
@@ -357,10 +377,9 @@ The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been 
 % Explain that we took minimum values
 % Discuss noise and "randomness" of the results on Cray machines
 
-\subsubsection{New projections}
-% Show improvement due to the new projection method
 
-\subsubsection{Strong scaling}
+\subsection{All the graphs}
+With link to each subsection in \refsec{sec:abstractions}
 
 
 \begin{figure}
