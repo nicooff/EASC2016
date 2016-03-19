@@ -51,9 +51,11 @@
 \newcommand{\reftab}[1]{Table~\ref{#1}}
 \newcommand{\refeqn}[1]{(\ref{#1})}
 \newcommand{\reflst}[1]{Listing~(\ref{#1})}
+\newcommand{\bigo}[1]{\mathcal{O}(#1)}
 
 \documentclass{sig-alternate}
 
+\usepackage{subfigure}
 
 \begin{document}
 
@@ -244,6 +246,7 @@ In this paper, strong scaling and benchmarking of the high-order spectral elemen
 
 The resolution of partial differential equations (PDE) is common practice nowadays in the scientific community. However, developing a code that scales linearly on a large number of cores still remains a challenging task. In this paper, we study the behavior of Nek5000, a solver for fluid mechanics and heat transfer problems, on a large number of processors and assess its ability to run efficiently on the next generation of exascale supercomputers. Cite\cite{fischer:scaling} and \cite{tufo:terascale}...
 
+\subsection{Brief introduction to the systems used}
 \section{Prior Work}
 Link to the complexities in the Fischer paper -> multiplicities
 Explain finite difference link
@@ -318,7 +321,50 @@ Different timers have been placed within the code in order to measure time for t
 % Discuss the two coarse grid solver XXT and AMG
 
 \section{Performance and Scaling Analysis}
+Notes: c32
+Large scale runtime performance is influenced by 
+\begin{enumerate}
+  \item Network topology
+  \item Time $T_a$ and $T_c$ spent in computation and communication,
+    %respectively
+  \item ratio of runtime and communication times: $r \leq \dfrac{T_a}{T_c}$,
+  \item degrees of freedom $n$ per process $P$: $\dfrac{n}{P}$,
+  \item partitioning imbalance.
+\end{enumerate}
+
+We will measure the load imbalance, cache misses, multiplicities of grid points
+across as well as weak and strong scaling.
+While relying on the results of \cite{tufo:terascale}, we want in particular to verify
+experimentally the strong scaling limit which is defined as the ratio of $\dfrac{n}{P}$ where
+$\dfrac{T_a}{T_c}\leq 1$ inequality is equal to $1$ with increasing $P$. The
+abstraction of communication and computation time does not take into account
+factors as load imbalance, cache misses or accelerated collective communications.
+
+The communication is subdivided into nearest neighbour (NN) and so called
+allreductions. As the NN hints, the communication takes place between a spacial
+partition and all of its neighbours. In a 3D cubic with cubic partitioning this
+would be 8 for the vertices, 4 for the edges and 2 for the faces. We assume that
+all NN on mesh are also nearest neighbours on the partitioning mapped to the
+physical topology of the hardware. We will prove in \refsec{sec:abstractions}
+that our use case presented in the next section is equivalent to a cubic
+partitioning and rely on the complexities of \cite{tufo:terascale} for $T_c$ and
+$T_a$. The performance of allreduce is a core indicator of a system's
+performance and is dependent on its network hardware. The most prevalent
+complexities for allreductions are given by $\bigo{\dfrac{n}{P}\cdot log(P)}$. All
+systems used in this paper rely on accelerated allreduce MPI communication that have
+a complexity of $\bigo{O(n)}$, independently of $P$. Beskow uses the dragonfly
+topology where accelerated collectives are being presented in
+\cite{jain2012collectives}. Titan and Mira use a 3D and 5D torus, getting the
+reduction cost down to $\alpha \cdot c \cdot n$ where $c$ is a low constant
+value. In the end, the collective communication is the dominant and
+differentiating factor in the scaling behavior of Nek on those three systems.
+
+
+A generic case, widely known across the CFD community, is used to explore the
+scaling behavior of Nek. This should allow potential users to estimate and
+compare the scaling of Nek to other CFD software.
 \subsection{Use Case: Pipe}
+\label{sec:pipe}
 
 The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \ref{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
 
@@ -381,6 +427,20 @@ The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been 
 \subsection{All the graphs}
 With link to each subsection in \refsec{sec:abstractions}
 
+\begin{figure}
+  \subfigure[ReTau180]{
+  \includegraphics[width=\linewidth]{./figures/scaling_ReTau180.pdf}
+  }
+  \subfigure[ReTau360]{
+  \includegraphics[width=\linewidth]{./figures/scaling_ReTau360.pdf}
+  }
+  \subfigure[ReTau550]{
+  \includegraphics[width=\linewidth]{./figures/scaling_ReTau550.pdf}
+  }
+  \subfigure[ReTau1000]{
+  \includegraphics[width=\linewidth]{./figures/scaling_ReTau1000.pdf}
+  }
+\end{figure}
 
 \begin{figure}
 \centering

@@ -6,6 +6,5 @@ references/*
 *.blg
 *.dvi
 *.log
-*.pdf
 *.ps
 *.backup
