@@ -55,6 +55,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{units} % Added by N. Offermans 2016-03-10
+\usepackage{pgfplots} % Added by N. Offermans 2016-03-19
 
 % Need this for accents in Arial/Helvetica
 %\usepackage[T1]{fontenc}  % Gerry March 12, 2007 - causes Type 3 problems (body text)
