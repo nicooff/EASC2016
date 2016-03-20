@@ -245,8 +245,7 @@ In this paper, strong scaling and benchmarking of the high-order spectral elemen
 \section{Introduction}
 The development of highly scalable codes that perform well on different architectures has been a daunting task ever since the advent of High Performance Computing, due to the interplay between computation and communication, inescapable global operations but foremost due to the nature of this research field which is constantly redefining its future path. In the current work we explore the paralellism of Nek5000, which is one of the oldest legacy codes (celebrating 30 years this year) and thus has experienced many trends and changes in high performance computing strategies.
 
-Nek5000 is a spectral element, thermal hydraulics code which performs best on complex geometries, wall bounded problems (although it can handle any type of boundary condition), at large scales on any commonly used parallel computer architecture. The present study is aimed at providing users a handle on parameter choices for performance and scalability, and relies on previous work , such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark the code on a canonical flow case, a Direct Numerical Simulation case of incompressible flow in pipe at increasingly high Reynolds numbers \cite{Khoury2013}. As commonly known solving the Poisson equation for the pressure is the most challenging computationally part of a incompressible flow solver. Nek5000 relies on a domain decomposition approach to solving the Poisson subproblem, where the coarse grid solver is precondioned either via XXT \cite{Tufo2001151Tufo2001151} or AMG (ref report James). We explore both approaches and quantify the regimes in which either of them is recommendable... (to be finished after we analyzed the data)
-
+Nek5000 is a spectral element, thermal hydraulics code which performs best on complex geometries, wall bounded problems (although it can handle any type of boundary condition), at large scales on any commonly used parallel computer architecture. The present study is aimed at providing users a handle on parameter choices for performance and scalability, and relies on previous work , such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark the code on a canonical flow case, a Direct Numerical Simulation case of incompressible flow in pipe at increasingly high Reynolds numbers \cite{Khoury2013}. As commonly known solving the Poisson equation for the pressure is the most challenging computationally part of a incompressible flow solver. Nek5000 relies on a domain decomposition approach to solving the Poisson subproblem, where the coarse grid solver is precondioned either via XXT \cite{Tufo2001151} or AMG (ref report James). We explore both approaches and quantify the regimes in which either of them is recommendable... (to be finished after we analyzed the data).
 
 \subsection{Hardware}
 
@@ -269,7 +268,24 @@ Beskow & Cray XC40 & $53,632$ & $32$ &DragonFly & $5000$ & $3.3$\\
 \label{tab:computer_charac}
 \end{table*}
 
-The values for the non-dimensional latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receives messages of various sizes between different processors is measured and values of the latency and bandwidth aeaxre deduced and normalized by the inverse of the CPU frequency.
+The values for the non-dimensional latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receives messages of various sizes between different processors. Then the values $\alpha$ and $\beta$ are computed as the best fit for the linear model for interprocessor communication given by
+\begin{equation}
+ t_c(m) = (\alpha + \beta m) t_a,
+\end{equation}
+where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. (Inverse of the clock frequency ???) 
+Results for the ping-pong test results are shown in Figure \ref{fig:pingpong} along with the linear model for Beskow and Titan.
+
+\begin{figure}
+  \centering
+  \subfigure[Beskow]{
+  \includegraphics[width=\linewidth]{./figures/pingpong_beskow.png}
+  }
+  \subfigure[Titan]{
+  \includegraphics[width=\linewidth]{./figures/pingpong_titan.png}
+  }
+  \caption{Ping-pong test on Beskow and Titan.}
+  \label{fig:pingpong}
+\end{figure}
 
 % Show graph with results of the ping pong test?
 % Explain that we took minimum values
@@ -283,7 +299,7 @@ The values for the non-dimensional latency $\alpha$ and the inverse bandwidth $\
 projections
 
 \subsubsection{Splitting method}
-There are two main solvers available within Nek5000 for computing the solution of incompressible Navier-Stokes, of which one is also ammenable to non-divergence free flows. To preserve generality we picked the latter, based on \cite{Tomboulides1997}, which is in essence a fractional step solver.
+There are two main solvers available within Nek5000 for computing the solution of incompressible Navier-Stokes, of which one is also ammenable to non-divergence free flows. To preserve generality we picked the latter, based on \cite{Tomboulides1997}, which is in essence a fractional step solver. We solve the following equations
 \begin{align}
  \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u \cdot \nabla}) \mathbf{u} & = - \nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} + \mathbf{f} \label{eqn:NS_momentum},\\
  \nabla \cdot \mathbf{u} & = 0, \label{eqn:NS_continuity}
@@ -300,6 +316,14 @@ The nonlinear terms have been gathered in operator $N \left( \mathbf{u}^{k} \rig
 Note to Oana: rewrite in discrete form?? or not
 add projections description and reference
 explain additive schwarz and link to XXT AMG (ohhh man!!! fun fun fun!)
+
+Equation \ref{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main source of stiffness and its efficient resolution by iterative solver is preceded by two steps. First of all, the pressure at each time iteration is projected onto a subspace of previous solutions and serves as first guess for the iterative solver. We used a subspace of length $20$ in the present case. This method, described in \ref{tufo:terascale} (right paper?), has been shown to reduce the iteration count by a factor $2.5-5$. Then, A pressure preconditioner is built based on the additive overlapping Schwarz method and a coarse grid solve. Is is given by 
+\begin{equation}
+ M_0^{-1} := R_0^T A_{0}^{-1} R_0 + \sum_{k=1}^{K} R_k^T \tilde{A}_k^{-1} R_k.
+\end{equation}
+The overlapping part require local solves on each subdomain and is easily parallelized. The coarse grid solve is more difficult to parallelize and can be performed in two different ways. The first method is XXT \cite{Tufo2001151}, where the solution on the coarse grid is projected on a basis that constitutes a quasi-sparse factorization of $A_0^{-1}$. The second method is an algebraic multigrid solver (AMG) that operates a smoothing, a coarsening and a interpolation operation on a predefined number of coarse grid levels. Finally, the pressure equatin is solved with the generalized minimal residual method (GMRES).
+
+In a similar way, Equation \ref{hmhz_vel}, the Poisson equation for the velocity, is solved using the conjugate gradient (CG) iterative solver but without the need for a Schwarz method or a coarse grid solve.
 % \begin{align}
 %  \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
 %  \mathbf{h}_i^n & = N(\mathbf{u}_i^n) + B \mathbf{f}_i + ???, \label{eqn:rhs}\\
@@ -309,7 +333,7 @@ explain additive schwarz and link to XXT AMG (ohhh man!!! fun fun fun!)
 %  \mathbf{p}^{n+1} &= \mathbf{p}^{n} + \mathbf{\delta p}^{n}, \label{eqn:update_p} \\
 %  \mathbf{u}_i^{n+1}& = \mathbf{u}_i^{n} + \mathbf{\delta u}_i^{n}.  \label{eqn:update_u} 
 % \end{align}
-% The operators $A$ and $B$ represent the discrete Laplacian operator and the mass matrix respectively. The index $i=1,2,3$ represents the 3 spatial directions $x$, $y$ and $z$. The intermediate velocity $\mathbf{u}_i^*$ is extrapolated using a third order Adams-Bashforth scheme in Equation (\ref{eqn:extrap_vel}). The corresponding coefficients $\beta_k$ are given by $\beta_0 = \frac{23}{12}$, $\beta_1 = \frac{-4}{3}$ and $\beta_2 = \frac{5}{12}$ (??). The term $\mathbf{h}_i^n$ from equation (\ref{eqn:rhs}) contains the nonlinear convective term $N(\mathbf{u}_i^n)$ evaluated explicitely, the external forcing $\mathbf{f}_i$ and ???. Equation (\ref{eqn:hmhz_pres}) is solved using aGeneralized minimal residual method (GMRES), while equation (\ref{eqn:hmhz_vel}) is solved using the conjugate gradient (CG) mehtod. Furthermore, both the pressure and velocity vectors are projected onto a space of previous solutions in order to speed up the convergence of the iterative solvers. Projections occur before and after the 
+% The operators $A$ and $B$ represent the discrete Laplacian operator and the mass matrix respectively. The index $i=1,2,3$ represents the 3 spatial directions $x$, $y$ and $z$. The intermediate velocity $\mathbf{u}_i^*$ is extrapolated using a third order Adams-Bashforth scheme in Equation (\ref{eqn:extrap_vel}). The corresponding coefficients $\beta_k$ are given by $\beta_0 = \frac{23}{12}$, $\beta_1 = \frac{-4}{3}$ and $\beta_2 = \frac{5}{12}$ (??). The term $\mathbf{h}_i^n$ from equation (\ref{eqn:rhs}) contains the nonlinear convective term $N(\mathbf{u}_i^n)$ evaluated explicitely, the external forcing $\mathbf{f}_i$ and ???. Equation (\ref{eqn:hmhz_pres}) is solved using a Generalized minimal residual method (GMRES), while equation (\ref{eqn:hmhz_vel}) is solved using the conjugate gradient (CG) mehtod. Furthermore, both the pressure and velocity vectors are projected onto a space of previous solutions in order to speed up the convergence of the iterative solvers. Projections occur before and after the 
 % iterative solver. %When solving equations (\ref{eqn:hmhz_pres}) and (\ref{eqn:hmhz_vel}), we obtain the corrections for the pressure and the velocity that we can use to update those variables in Equations \ref{eqn:update_p} and \ref{eqn:update_u}.
 
 %\subsubsection{Coarse grid solver}
