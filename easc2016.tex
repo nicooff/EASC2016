@@ -328,14 +328,14 @@ Large scale runtime performance is influenced by
   \item Time $T_a$ and $T_c$ spent in computation and communication,
     %respectively
   \item ratio of runtime and communication times: $r \leq \dfrac{T_a}{T_c}$,
-  \item degrees of freedom $n$ per process $P$: $\dfrac{n}{P}$,
+  \item degrees of freedom $N$ per process $P$: $\dfrac{N}{P}$,
   \item partitioning imbalance.
 \end{enumerate}
 
 We will measure the load imbalance, cache misses, multiplicities of grid points
 across as well as weak and strong scaling.
 While relying on the results of \cite{tufo:terascale}, we want in particular to verify
-experimentally the strong scaling limit which is defined as the ratio of $\dfrac{n}{P}$ where
+experimentally the strong scaling limit which is defined as the ratio of $\dfrac{N}{P}$ where
 $\dfrac{T_a}{T_c}\leq 1$ inequality is equal to $1$ with increasing $P$. The
 abstraction of communication and computation time does not take into account
 factors as load imbalance, cache misses or accelerated collective communications.
@@ -398,7 +398,7 @@ $1000$ & $37,700$ & $1,264,032$ & $2.184 \times 10^9$\\
 
 \subsection{Hardware}
 
-The test cases were run on three different supercomputers, namely Mira from the Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory, USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden. A rapid overview of the characteristics of each computer is summarized in Table \ref{tab:computer_charac}
+The test cases were run on three different supercomputers, namely Mira from the Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory, USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden. A quick overview of the characteristics of each computer is summarized in Table \ref{tab:computer_charac}
 
 % Add other fields to the table?
 % Put latency and bandwidth in another table?
