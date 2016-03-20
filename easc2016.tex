@@ -87,7 +87,7 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Benchmarking and scaling of Nek5000}
+\title{Scaling Behavior of Nek5000}
 \subtitle{Subtitle}
 %
 % You need the command \numberofauthors to handle the 'placement
@@ -253,6 +253,7 @@ Explain finite difference link
 \section{Nek}
 
 \subsection{Method}
+projections
 
 \subsubsection{Splitting method}
 
@@ -287,10 +288,27 @@ The nonlinear terms have been gathered in operator $N \left( \mathbf{u}^{k} \rig
 % introduce coarse grid solver for the pressure
 
 \subsection{Implementation}
+\label{sec:implementation}
 \subsubsection{Code structure}
+\label{sec:code}
 
-\subsubsection{Timers}
-
+\subsubsection{Instrumentation for the Timers}
+\label{sec:timers}
+Our strategy for timing the code execution is twofold. For one, we use MPI
+timers for the wall clock time and profiling libraries that were deemed suitable
+for our use case. We are running the code on our test case (see
+\refsec{sec:pipe}) after a full restart for 50 time steps. We save 5 past
+projections and are measuring the time from the 30th to the 50th time step; in
+total 20 time steps. 
+\paragraph{MPI Timers}
+Based on the
+structure presented in \refsec{sec:code} we placed 9 timers in the code that are
+only switched on during the last 20 time steps. Each timer measures the wall
+clock time using the MPI timer ({\tt MPI\_Wtime}) followed by a barrier
+({\tt MPI\_Barrier}) guaranteeing coherent and synchronized measurements. We
+have run the code without synchronization and timers to evaluate the created
+overhead due to our measurements. In all instances this overhead has been far
+below 5\%. 
 Different timers have been placed within the code in order to measure time for the main blocks of the solution. The different timers are
 \begin{itemize}
  \item \textit{totaltime}: total time spent for all iterations.
@@ -304,6 +322,12 @@ Different timers have been placed within the code in order to measure time for t
  \item \textit{tvproj2}: time to project the velocity after the iterative solver.
  \item \textit{tcoarse}: time for the coarse grid solver for the pressure.
 \end{itemize}
+\paragraph{Craypat and Hardware Performance Monitor}
+In order to measure the time spent in communication we relied on Craypat for
+Beskow and Titan and on Hardware Performance Monitor (HPM) for Mira. Both tools
+allow us to the total time spent in communication during the targeted 20 time
+steps. In addition HPM gives additional information on the cash misses and the load
+imbalance.
 
 %\subsection{Models for parallel performance}
 
@@ -321,6 +345,7 @@ Different timers have been placed within the code in order to measure time for t
 % Discuss the two coarse grid solver XXT and AMG
 
 \section{Performance and Scaling Analysis}
+\label{sec:analysis}
 Notes: c32
 Large scale runtime performance is influenced by 
 \begin{enumerate}
@@ -359,11 +384,10 @@ reduction cost down to $\alpha \cdot c \cdot n$ where $c$ is a low constant
 value. In the end, the collective communication is the dominant and
 differentiating factor in the scaling behavior of Nek on those three systems.
 
-
 A generic case, widely known across the CFD community, is used to explore the
 scaling behavior of Nek. This should allow potential users to estimate and
 compare the scaling of Nek to other CFD software.
-\subsection{Use Case: Pipe}
+\subsection{Test Case: Pipe}
 \label{sec:pipe}
 
 The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \ref{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
@@ -383,18 +407,68 @@ $1000$ & $37,700$ & $1,264,032$ & $2.184 \times 10^9$\\
 \end{tabular}
 \label{tab:pipe_conf}
 \end{table}
-\subsection{Abstractions and Assumptions}
-\label{sec:abstractions}
-\subsubsection{$\alpha$, $\beta$}
-\subsubsection{Imbalance}
-\subsubsection{Weak/Strong Scaling, Efficiency}
-\subsubsection{Cache Misses and Scaling}
-\subsubsection{Partitioning and Imbalance}
+%\subsection{Abstractions and Assumptions}
+%\label{sec:abstractions}
+%\subsubsection{$\alpha$, $\beta$}
+%\subsubsection{Imbalance}
+%\subsubsection{Weak/Strong Scaling, Efficiency}
+%\subsubsection{Cache Misses and Scaling}
+%\subsubsection{Partitioning and Imbalance}
 
 
 \section{Results}
 
-% Talk about synchronization?
+Our four test cases were run with various processor counts on three systems. The
+lower bound for the processor count is given by the amount of RAM to fit a given
+problem into memory. Nek5000 has roughly a memory requirement of 500 fields
+times the number of degrees of freedoms. The upper bound was either due to the
+administrative limit of getting access to the maximum number of processors
+(Beskow and Titan) or by the limit of having 1 or 2 elements per process. As has
+been pointed out in \refsec{sec:code}, the parallelization of Nek5000 is at the
+element level so that one element may not be partitioned further. 
+
+As anticipated in \refsec{sec:timers}, we measure the communication time and
+computation time of the chosen 20 timesteps. The scaling plots for all three
+systems in \reffig{fig:mira} and \reffig{fig:beskow} are the fundamental
+measurements for our analysis.
+\begin{figure}
+  \centering
+  \subfigure[ReTau180 Mira]{
+  \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau180.pdf}
+  }
+  \subfigure[ReTau360 Mira]{
+  \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau360.pdf}
+  }
+  \subfigure[ReTau550 Mira]{
+  \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau550.pdf}
+  }
+  \subfigure[ReTau1000 Mira]{
+  \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau1000.pdf}
+  }
+  \caption{BG/Q Mira}
+  \label{fig:scaling_mira}
+\end{figure}
+
+\newpage
+
+\begin{figure}
+  \centering
+  \subfigure[ReTau180]{
+  \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau180.pdf}
+  }
+  \subfigure[ReTau360]{
+  \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau360.pdf}
+  }
+  \subfigure[ReTau550]{
+  \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau550.pdf}
+  }
+  \subfigure[ReTau1000]{
+  \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau1000.pdf}
+  }
+\caption{Beskow}
+\label{fig:scaling_beskow}
+\end{figure}
+
 
 \subsection{Hardware}
 
@@ -409,7 +483,7 @@ The test cases were run on three different supercomputers, namely Mira from the 
 \hline
  & Architecture & \# of cores & cores/node & $\alpha$ & $\beta$\\
  \hline
-Mira & IBM BG/Q & $786,432$ & $16$ & $*$ & $*$\\ 
+Mira & IBM BG/Q & $786,432$ & $16$ & $5000$ & $5$\\ 
 Titan & Cray XK7 & $299,008$ & $16$ & $*$ & $*$\\ 
 Beskow & Cray XC40 & $53,632$ & $32$ & $*$ & $*$\\
 \hline
@@ -424,30 +498,10 @@ The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been 
 % Discuss noise and "randomness" of the results on Cray machines
 
 
-\subsection{All the graphs}
+\subsection{Weak and Strong Scaling}
 With link to each subsection in \refsec{sec:abstractions}
 
-\begin{figure}
-  \subfigure[ReTau180]{
-  \includegraphics[width=\linewidth]{./figures/scaling_ReTau180.pdf}
-  }
-  \subfigure[ReTau360]{
-  \includegraphics[width=\linewidth]{./figures/scaling_ReTau360.pdf}
-  }
-  \subfigure[ReTau550]{
-  \includegraphics[width=\linewidth]{./figures/scaling_ReTau550.pdf}
-  }
-  \subfigure[ReTau1000]{
-  \includegraphics[width=\linewidth]{./figures/scaling_ReTau1000.pdf}
-  }
-\end{figure}
 
-\begin{figure}
-\centering
-\input{figures/ReTau180_beskow.tex}
-\caption{Beskow ReTau180}
-\label{fig:ReTau180_beskow}
-\end{figure}
 
 
 % Regular figure
@@ -496,10 +550,12 @@ With link to each subsection in \refsec{sec:abstractions}
 \appendix
 %Appendix A
 \section{Appendix A}
+\label{sec:plots}
 % This next section command marks the start of
 % Appendix B, and does not continue the present hierarchy
 
 %\balancecolumns % GM June 2007
 % That's all folks!
+Test what is wrong
 \end{document}
 
