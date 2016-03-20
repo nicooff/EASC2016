@@ -324,10 +324,13 @@ Explain finite difference link
 The geometry is meshed using hexahedral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 (insert ref documentation and check if the genmap description is still in.. and give it to gail for once!!!!)
 \begin{figure}
   \centering
-  \subfigure[partition]{
-  \includegraphics[width=\linewidth]{./figures/partition.png}
+  \subfigure[Partition]{
+  \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/partition2.png}
   }
-  \caption{Mesh Partioning}
+  \subfigure[Velocity magnitude]{
+  \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/vel_magn.png}
+  }
+  \caption{Partition of the elements and velocity magnitude in the pipe.}
   \label{fig:partition}
 \end{figure}
  
