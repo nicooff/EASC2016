@@ -530,9 +530,17 @@ With link to each subsection in \refsec{sec:abstractions}
 The ratio of computation and communication time $r=\frac{T_a}{T_c}$ is a key
 indicator for the strong scaling limit. If communication takes longer than
 computation, the code is deemed to be at the strong scaling limit where the
-scaling diverges significantly from the perfect linear scaling.  
+scaling diverges significantly from the perfect linear scaling. For both XXT and
+AMG this point is clearly determined in the plots where the computation time
+crosses the communication time. 
 
-On Mira this limit has consistently been at around 
+On Mira this limit has consistently in all 4 cases (see
+\reffig{fig:scaling_mira}) 
+\begin{tabular}
+  &ReTau180&ReTau360&ReTau550&ReTau1000\\
+  XXT&2300&1900&2000&
+  AMG&2300&2400&3300&
+\end{tabular}
 
 
 
