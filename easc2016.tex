@@ -511,22 +511,11 @@ versus communication time and load imbalance.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{./figures/cachelines.jpg}
-\end{figure}
-\begin{figure}
-  \centering
   \includegraphics[width=\linewidth]{./figures/loadbalance.png}
-\end{figure}
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{./figures/weak.png}
 \end{figure}
 
 \subsection{Weak and Strong Scaling}
-With link to each subsection in \refsec{sec:abstractions}
 
-
-\subsection{Communication versus Computation}
 The ratio of computation and communication time $r=\frac{T_a}{T_c}$ is a key
 indicator for the strong scaling limit. If communication takes longer than
 computation, the code is deemed to be at the strong scaling limit where the
@@ -535,17 +524,58 @@ AMG this point is clearly determined in the plots where the computation time
 crosses the communication time. 
 
 On Mira this limit has consistently in all 4 cases (see
-\reffig{fig:scaling_mira}) 
+\reffig{fig:scaling_mira}). The approximations of values for $\frac{n}{P}$ where
+$r=1$ are listed below:
+  
 \begin{tabular}{ccccc}
   &ReTau180&ReTau360&ReTau550&ReTau1000\\
   XXT&2300&1900&2000&\\
-  AMG&2300&2400&3300&\\
+  AMG&2300&2400&3300&4000\\
 \end{tabular}
 
+In practice we observed a strong scaling limit $r=1$ for XXT at roughly $1900<
+\frac{n}{P} < 2300$ and for AMG at $2300<\frac{n}{P}<4000$, below the $7000$
+anticipated in \cite{fischer:scaling}. 
 
+However, there are two intricacies related to the compute time scaling of
+Nek5000. In theory the compute time scaling should exactly match linear scaling
+as computational work is distributed according to the ratio $\frac{n}{P}$. All
+algorithms in Nek5000 should yield little overhead due to the halo update. 
 
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/cachelines.jpg}
+  \caption{Cache Misses}
+  \label{fig:cachemisses}
+\end{figure}
 
+All test cases on all the systems show a super linear scaling. This
+observation holds true with all timers and profilers switched off.
+Numerically there is no explanation for this behavior. 
 
+First, the usual explanation for super linear scaling are a sudden decrease of the cache
+misses for decreasing $\frac{n}{P}$, as parts of the solver can entirely work on
+data that lies in the cache. 
+To investigate this, we extracted the cache misses on Mira provided by HPM (see
+\reffig{fig:cachemisses}). Mira is equipped with L1 cache of 16kb. The L2 cache
+of 32mb, that is located at the node level, is irrelevant as we had consistently
+over 97\% cache misses. The L1 cache can be filled with $2048$ double precision
+numbers. Although the data fields achieve those sizes only at the strong scaling
+limit we do observe a general decrease in cache misses with decreasing
+$\frac{n}{P}$. We therefor attribute the super linear scaling to cache
+management and pipelining on the CPU of Mira. 
+
+Second, the super linear scaling if not  
+
+Through the four test cases we can derive a weak scaling pictures in
+\reffig{fig:weakscaling}. It proves that the scaling on Mira is only dependent
+on the ratio $\frac{n}{P}$. 
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/weak.png}
+  \caption{Weak Scaling}
+  \label{fig:weakscaling}
+\end{figure}
 \section{Conclusions}
 %\end{document}  % This is where a 'short' article might terminate
 
