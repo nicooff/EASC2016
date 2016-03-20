@@ -243,8 +243,10 @@ In this paper, strong scaling and benchmarking of the high-order spectral elemen
 \keywords{Nek5000; Scaling; Benchmarking}
 
 \section{Introduction}
+The development of highly scalable codes that perform well on different architectures has been a daunting task ever since the advent of High Performance Computing, due to the interplay between computation and communication, inescapable global operations but foremost due to the nature of this research field which is constantly redefining its future path. In the current work we explore the paralellism of Nek5000, which is one of the oldest legacy codes (celebrating 30 years this year) and thus has experienced many trends and changes in high performance computing strategies.
 
-The resolution of partial differential equations (PDE) is common practice nowadays in the scientific community. However, developing a code that scales linearly on a large number of cores still remains a challenging task. In this paper, we study the behavior of Nek5000, a solver for fluid mechanics and heat transfer problems, on a large number of processors and assess its ability to run efficiently on the next generation of exascale supercomputers. Cite\cite{fischer:scaling} and \cite{tufo:terascale}...
+Nek5000 is a spectral element, thermal hydraulics code which performs best on complex geometries, wall bounded problems (although it can handle any type of boundary condition), at large scales on any commonly used parallel computer architecture. The present study is aimed at providing users a handle on parameter choices for performance and scalability, and relies on previous work , such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark the code on a canonical flow case, a Direct Numerical Simulation case of incompressible flow in pipe at increasingly high Reynolds numbers (insert ref). As commonly known solving the Poisson equation for the pressure is the most challenging computationally part of a incompressible flow solver. Nek5000 relies on a domain decomposition approach to solving the Poisson subproblem, where the coarse grid solver is precondioned either via XXT (insert ref tufo) or AMG (ref report James). We explore both approaches and quantify the regimes in which either of them is recommendable... (to be finished after we analyzed the data)
+
 
 \subsection{Hardware}
 
@@ -283,13 +285,12 @@ Explain finite difference link
 projections
 
 \subsubsection{Splitting method}
-
-We consider the resolution of the Navier-Stokes equations for an incompressible flow and Newtonian fluid
+There are two main solvers available within Nek5000 for computing the solution of incompressible Navier-Stokes, of which one is also ammenable to non-divergence free flows. To preserve generality we picked the latter, based on \cite{Tomboulides1997}, which is in essence a fractional step solver.
 \begin{align}
- \nabla \cdot \mathbf{u} & = 0, \label{eqn:NS_continuity}\\
- \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u \cdot \nabla}) \mathbf{u} & = - \nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} + \mathbf{f} \label{eqn:NS_momentum},
+ \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u \cdot \nabla}) \mathbf{u} & = - \nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} + \mathbf{f} \label{eqn:NS_momentum},\\
+ \nabla \cdot \mathbf{u} & = 0, \label{eqn:NS_continuity}
 \end{align}
-where $\mathbf{u}$ is the velocity field and $p$ the thermodynamic pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations (\ref{eqn:NS_continuity}) and (\ref{eqn:NS_momentum}) are called the continuity and momentum equations respectively. The numerical integration of the momentum equation is done explicitely for the nonliean convective terms and implicitely for the viscous and pressure term according to a scheme developped by A. G. Tomboulides \cite{Tomboulides1997}. This method is referred to as $\mathbb{P}_N\mathbb{P}_N$ and leads to the following system of equations for one iteration
+where $\mathbf{u}$ is the velocity field and $p$ the pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations (\ref{eqn:NS_momentum})  and (\ref{eqn:NS_continuity}) are called the continuity and momentum equations respectively. The numerical integration of the momentum equation is done explicitely for the nonliear convective terms and implicitely for the viscous and pressure term according to \cite{Tomboulides1997}. This method is referred to as $\mathbb{P}_N\mathbb{P}_N$ and leads to the following system of equations for one iteration
 \begin {align}
  \mathbf{F} \left( \mathbf{u}^{n} \right) & = \sum_{j=1}^{k} \frac{-b_j}{\Delta t} \mathbf{u}^{n+1-j} + \sum_{j=1}^{k} a_j N \left( \mathbf{u}^{n+1-j} \right) +  \mathbf{f}^{n+1} \label{eqn:rhs1}\\
  \mathbf{\tilde{F}} \left( \mathbf{u}^{n} \right) & = \mathbf{F}\left(\mathbf{u}^{n}\right) + \mu \sum_{j=1}^{k} a_j \left( \nabla \times \left( \nabla \times \mathbf{u}^{n+1-j} \right) \right) \label{eqn:rhs2} \\
@@ -316,6 +317,17 @@ The nonlinear terms have been gathered in operator $N \left( \mathbf{u}^{k} \rig
 
 \subsection{Implementation}
 \label{sec:implementation}
+The geometry is meshed using hexheadral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 (insert ref documentation and check if the genmap description is still in.. and give it to gail for once!!!!)
+\begin{figure}
+  \centering
+  \subfigure[partition]{
+  \includegraphics[width=\linewidth]{./figures/partition.png}
+  }
+  \caption{Mesh Partioning}
+  \label{fig:partition}
+\end{figure}
+ 
+I should have next to the partition figure the flow at same angle and size, possible Nicolas? 
 \subsubsection{Code structure}
 \label{sec:code}
 
