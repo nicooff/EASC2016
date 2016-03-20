@@ -245,7 +245,7 @@ In this paper, strong scaling and benchmarking of the high-order spectral elemen
 \section{Introduction}
 The development of highly scalable codes that perform well on different architectures has been a daunting task ever since the advent of High Performance Computing, due to the interplay between computation and communication, inescapable global operations but foremost due to the nature of this research field which is constantly redefining its future path. In the current work we explore the paralellism of Nek5000, which is one of the oldest legacy codes (celebrating 30 years this year) and thus has experienced many trends and changes in high performance computing strategies.
 
-Nek5000 is a spectral element, thermal hydraulics code which performs best on complex geometries, wall bounded problems (although it can handle any type of boundary condition), at large scales on any commonly used parallel computer architecture. The present study is aimed at providing users a handle on parameter choices for performance and scalability, and relies on previous work , such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark the code on a canonical flow case, a Direct Numerical Simulation case of incompressible flow in pipe at increasingly high Reynolds numbers (insert ref). As commonly known solving the Poisson equation for the pressure is the most challenging computationally part of a incompressible flow solver. Nek5000 relies on a domain decomposition approach to solving the Poisson subproblem, where the coarse grid solver is precondioned either via XXT (insert ref tufo) or AMG (ref report James). We explore both approaches and quantify the regimes in which either of them is recommendable... (to be finished after we analyzed the data)
+Nek5000 is a spectral element, thermal hydraulics code which performs best on complex geometries, wall bounded problems (although it can handle any type of boundary condition), at large scales on any commonly used parallel computer architecture. The present study is aimed at providing users a handle on parameter choices for performance and scalability, and relies on previous work , such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark the code on a canonical flow case, a Direct Numerical Simulation case of incompressible flow in pipe at increasingly high Reynolds numbers \cite{Khoury2013}. As commonly known solving the Poisson equation for the pressure is the most challenging computationally part of a incompressible flow solver. Nek5000 relies on a domain decomposition approach to solving the Poisson subproblem, where the coarse grid solver is precondioned either via XXT \cite{Tufo2001151Tufo2001151} or AMG (ref report James). We explore both approaches and quantify the regimes in which either of them is recommendable... (to be finished after we analyzed the data)
 
 
 \subsection{Hardware}
@@ -261,15 +261,15 @@ The test cases were run on three different supercomputers, namely Mira from the 
 \hline
  & Architecture & \# of cores & cores/node &topology& $\alpha$ & $\beta$\\
  \hline
-Mira & IBM BG/Q & $786,432$ &5D torus& $16$ & $5000$ & $5$\\ 
-Titan & Cray XK7 & $299,008$ &3D torus& $16$ & $*$ & $*$\\ 
-Beskow & Cray XC40 & $53,632$ &DragonFly& $32$ & $*$ & $*$\\
+Mira & IBM BG/Q & $786,432$ & $16$ & 5D torus & $5000$ & $5$\\ 
+Titan & Cray XK7 & $299,008$ & $16$ &3D torus& $5000$ & $3.1$\\ 
+Beskow & Cray XC40 & $53,632$ & $32$ &DragonFly & $5000$ & $3.3$\\
 \hline
 \end{tabular}
 \label{tab:computer_charac}
 \end{table*}
 
-The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receives messages of various sizes between different processors is measured and values of the latency and bandwidth are deduced.
+The values for the non-dimensional latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receives messages of various sizes between different processors is measured and values of the latency and bandwidth aeaxre deduced and normalized by the inverse of the CPU frequency.
 
 % Show graph with results of the ping pong test?
 % Explain that we took minimum values
@@ -288,7 +288,7 @@ There are two main solvers available within Nek5000 for computing the solution o
  \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u \cdot \nabla}) \mathbf{u} & = - \nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} + \mathbf{f} \label{eqn:NS_momentum},\\
  \nabla \cdot \mathbf{u} & = 0, \label{eqn:NS_continuity}
 \end{align}
-where $\mathbf{u}$ is the velocity field and $p$ the pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations (\ref{eqn:NS_momentum})  and (\ref{eqn:NS_continuity}) are called the continuity and momentum equations respectively. The numerical integration of the momentum equation is done explicitely for the nonliear convective terms and implicitely for the viscous and pressure term according to \cite{Tomboulides1997}. This method is referred to as $\mathbb{P}_N\mathbb{P}_N$ and leads to the following system of equations for one iteration
+where $\mathbf{u}$ is the velocity field and $p$ the pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations (\ref{eqn:NS_momentum})  and (\ref{eqn:NS_continuity}) are called the continuity and momentum equations respectively. The numerical integration of the momentum equation is done explicitely for the nonlinear convective terms and implicitely for the viscous and pressure term according to \cite{Tomboulides1997}. This method is referred to as $\mathbb{P}_N\mathbb{P}_N$ and leads to the following system of equations for one iteration
 \begin {align}
  \mathbf{F} \left( \mathbf{u}^{n} \right) & = \sum_{j=1}^{k} \frac{-b_j}{\Delta t} \mathbf{u}^{n+1-j} + \sum_{j=1}^{k} a_j N \left( \mathbf{u}^{n+1-j} \right) +  \mathbf{f}^{n+1} \label{eqn:rhs1}\\
  \mathbf{\tilde{F}} \left( \mathbf{u}^{n} \right) & = \mathbf{F}\left(\mathbf{u}^{n}\right) + \mu \sum_{j=1}^{k} a_j \left( \nabla \times \left( \nabla \times \mathbf{u}^{n+1-j} \right) \right) \label{eqn:rhs2} \\
@@ -321,7 +321,7 @@ Explain finite difference link
 
 \subsection{Implementation}
 \label{sec:implementation}
-The geometry is meshed using hexheadral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 (insert ref documentation and check if the genmap description is still in.. and give it to gail for once!!!!)
+The geometry is meshed using hexahedral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 (insert ref documentation and check if the genmap description is still in.. and give it to gail for once!!!!)
 \begin{figure}
   \centering
   \subfigure[partition]{
@@ -368,9 +368,9 @@ Different timers have been placed within the code in order to measure time for t
 \paragraph{Craypat and Hardware Performance Monitor}
 In order to measure the time spent in communication we relied on Craypat for
 Beskow and Titan and on Hardware Performance Monitor (HPM) for Mira. Both tools
-allow us to the total time spent in communication during the targeted 20 time
-steps. In addition HPM gives additional information on the cash misses and the load
-imbalance.
+allow us to measure the total time spent in communication during the targeted 20 time
+steps. In addition HPM gives additional information on the cache misses and the load
+imbalance. The CrayPat performance analysis framework is used to sample the code during execution at a default frequency of $\unit[100]{Hz}$ and reports in which function each sample was taken. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. The sampling procedure ensures a very low overhead. We also tested the profiling procedure, where all function calls are tracked, available with Craypat but overhead in time was about $50\%$ and the method was abandoned.
 
 %\subsection{Models for parallel performance}
 
@@ -378,8 +378,6 @@ imbalance.
 
 %\subsubsection{Communication model}
 
-% The total time and the time spent in the different parts of the code were computed by measuring the CPU time at appropriate locations in the code. This method is easy to implement, reliable and adds little overhead to the simulations. The measure of the communication time is a trickier task. This is done on Mira using the HPM-sampling tool (? -> add some more info maybe). On the Cray machines, we use the CrayPat performance analysis framework. This tool samples the code during execution at a frequency of $\unit[100]{Hz}$ and reports in which function the sample was found. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. If the number of samples is large enough, statistics is reliable. Furthermore, it induces a low overhead. A profiling procedure, where all function calls are tracked, could also be used but overhead in time is about $50\%$ and the method is therefore rejected.
-% 
 % In practice, each simulation is restarted from a previously computed turbulent solution and is run during $50$ time steps. The projections for velocity and pressure are turned on after $5$ time steps, the number of the previous pressure solutions saved is $20$ and the timers are turned on during the last $20$ time steps. Therefore, heavy input/output is not included and projections are working fully during the measurement period.
 
 % Present system of equations
@@ -409,7 +407,7 @@ abstraction of communication and computation time does not take into account
 factors as load imbalance, cache misses or accelerated collective communications.
 
 The communication is subdivided into nearest neighbour (NN) and so called
-allreductions. As the NN hints, the communication takes place between a spacial
+allreductions. As the NN hints, the communication takes place between a spatial
 partition and all of its neighbours. In a 3D cubic with cubic partitioning this
 would be 8 for the vertices, 4 for the edges and 2 for the faces. We assume that
 all NN on mesh are also nearest neighbours on the partitioning mapped to the
@@ -418,9 +416,9 @@ that our use case presented in the next section is equivalent to a cubic
 partitioning and rely on the complexities of \cite{fischer:scaling} for $T_c$ and
 $T_a$. The performance of allreduce is a core indicator of a system's
 performance and is dependent on its network hardware. The most prevalent
-complexities for allreductions are given by $\bigo{\dfrac{n}{P}\cdot log(P)}$. All
+complexities for allreductions are given by $\bigo{\dfrac{n}{P}\cdot \log(P)}$. All
 systems used in this paper rely on accelerated allreduce MPI communication that have
-a complexity of $\bigo{O(n)}$, independently of $P$. Beskow uses the dragonfly
+a complexity of $\bigo{n}$, independently of $P$. Beskow uses the dragonfly
 topology where accelerated collectives are being presented in
 \cite{jain2012collectives}. Titan and Mira use a 3D and 5D torus, getting the
 reduction cost down to $\alpha \cdot c \cdot n$ where $c$ is a low constant
@@ -489,16 +487,16 @@ measurements for our further analysis of the weak/strong scaling, computation
 versus communication time and load imbalance.
 \begin{figure}
   \centering
-  \subfigure[ReTau180 Mira]{
+  \subfigure[$Re_{\tau} = 180$]{
   \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau180.pdf}
   }
-  \subfigure[ReTau360 Mira]{
+  \subfigure[$Re_{\tau} = 360$]{
   \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau360.pdf}
   }
-  \subfigure[ReTau550 Mira]{
+  \subfigure[$Re_{\tau} = 550$]{
   \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau550.pdf}
   }
-  \subfigure[ReTau1000 Mira]{
+  \subfigure[$Re_{\tau} = 1000$]{
   \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau1000.pdf}
   }
   \caption{BG/Q Mira}
@@ -509,20 +507,45 @@ versus communication time and load imbalance.
 
 \begin{figure}
   \centering
-  \subfigure[ReTau180]{
+  \subfigure[$Re_{\tau} = 180$]{
   \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau180.pdf}
   }
-  \subfigure[ReTau360]{
+  \subfigure[$Re_{\tau} = 360$]{
   \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau360.pdf}
   }
-  \subfigure[ReTau550]{
+  \subfigure[$Re_{\tau} = 550$]{
   \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau550.pdf}
   }
-  \subfigure[ReTau1000]{
+  \subfigure[$Re_{\tau} = 1000$]{
   \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau1000.pdf}
   }
 \caption{Beskow}
 \label{fig:scaling_beskow}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \subfigure[$Re_{\tau} = 180$]{
+  \includegraphics[width=\linewidth]{./figures/titan/scaling_ReTau180_titan.pdf}
+  }
+  \subfigure[$Re_{\tau} = 360$]{
+  \includegraphics[width=\linewidth]{./figures/titan/scaling_ReTau360_titan.pdf}
+  }
+  \subfigure[$Re_{\tau} = 550$]{
+  \includegraphics[width=\linewidth]{./figures/titan/scaling_ReTau550_titan.pdf}
+  }
+  \subfigure[$Re_{\tau} = 1000$]{
+  \includegraphics[width=\linewidth]{./figures/titan/scaling_ReTau1000_titan.pdf}
+  }
+\caption{Titan}
+\label{fig:scaling_titan}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/imbalancehist.eps}
+  \caption{Historigram of the load imbalance}
+  \label{fig:imbalancehist}
 \end{figure}
 
 \begin{figure}
