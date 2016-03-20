@@ -246,7 +246,34 @@ In this paper, strong scaling and benchmarking of the high-order spectral elemen
 
 The resolution of partial differential equations (PDE) is common practice nowadays in the scientific community. However, developing a code that scales linearly on a large number of cores still remains a challenging task. In this paper, we study the behavior of Nek5000, a solver for fluid mechanics and heat transfer problems, on a large number of processors and assess its ability to run efficiently on the next generation of exascale supercomputers. Cite\cite{fischer:scaling} and \cite{tufo:terascale}...
 
-\subsection{Brief introduction to the systems used}
+\subsection{Hardware}
+
+The test cases were run on three different supercomputers, namely Mira from the Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory, USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden. A quick overview of the characteristics of each computer is summarized in Table \ref{tab:computer_charac}
+
+% Add other fields to the table?
+% Put latency and bandwidth in another table?
+\begin{table*}
+\centering
+\caption{Overview of the characteristics of the different supercomputers.}
+\begin{tabular}{l|ccccc} 
+\hline
+ & Architecture & \# of cores & cores/node & $\alpha$ & $\beta$\\
+ \hline
+Mira & IBM BG/Q & $786,432$ & $16$ & $5000$ & $5$\\ 
+Titan & Cray XK7 & $299,008$ & $16$ & $*$ & $*$\\ 
+Beskow & Cray XC40 & $53,632$ & $32$ & $*$ & $*$\\
+\hline
+\end{tabular}
+\label{tab:computer_charac}
+\end{table*}
+
+The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receives messages of various sizes between different processors is measured and values of the latency and bandwidth are deduced.
+
+% Show graph with results of the ping pong test?
+% Explain that we took minimum values
+% Discuss noise and "randomness" of the results on Cray machines
+
+
 \section{Prior Work}
 Link to the complexities in the Fischer paper -> multiplicities
 Explain finite difference link
@@ -372,7 +399,7 @@ would be 8 for the vertices, 4 for the edges and 2 for the faces. We assume that
 all NN on mesh are also nearest neighbours on the partitioning mapped to the
 physical topology of the hardware. We will prove in \refsec{sec:abstractions}
 that our use case presented in the next section is equivalent to a cubic
-partitioning and rely on the complexities of \cite{tufo:terascale} for $T_c$ and
+partitioning and rely on the complexities of \cite{fischer:scaling} for $T_c$ and
 $T_a$. The performance of allreduce is a core indicator of a system's
 performance and is dependent on its network hardware. The most prevalent
 complexities for allreductions are given by $\bigo{\dfrac{n}{P}\cdot log(P)}$. All
@@ -426,11 +453,24 @@ administrative limit of getting access to the maximum number of processors
 (Beskow and Titan) or by the limit of having 1 or 2 elements per process. As has
 been pointed out in \refsec{sec:code}, the parallelization of Nek5000 is at the
 element level so that one element may not be partitioned further. 
-
 As anticipated in \refsec{sec:timers}, we measure the communication time and
-computation time of the chosen 20 timesteps. The scaling plots for all three
+computation time of the chosen 20 timesteps. 
+
+In \cite{fischer:scaling} the point where $r=\dfrac{T_a}{T_c}=1$ was estimated
+to be at about $\frac{n}{P}=2000$ for the conjugent gradient (CG) and $20000$ or
+$7000$ (BG/Q) for the algebraic multigrid (AMG). As described in \refsec{sec:code}, the
+Nek5000 solvers XXT and PNPN consist of several CG and AMG solves. Furthermore,
+there is an overhead for the setup, the projections, the coarse solve and other
+none runtime relevant components. Moreoever, the convergence of the underlying
+algorithms is also very case dependent, thus influencing the overall runtime
+behavior. Our runtimes give an overall impression of the Nek5000 behaviour on
+various systems based on a generic well known case in CFD (see
+\refsec{sec:pipe}). 
+
+The scaling plots for all three
 systems in \reffig{fig:mira} and \reffig{fig:beskow} are the fundamental
-measurements for our analysis.
+measurements for our further analysis of the weak/strong scaling, computation
+versus communication time and load imbalance.
 \begin{figure}
   \centering
   \subfigure[ReTau180 Mira]{
@@ -469,61 +509,33 @@ measurements for our analysis.
 \label{fig:scaling_beskow}
 \end{figure}
 
-
-\subsection{Hardware}
-
-The test cases were run on three different supercomputers, namely Mira from the Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory, USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden. A quick overview of the characteristics of each computer is summarized in Table \ref{tab:computer_charac}
-
-% Add other fields to the table?
-% Put latency and bandwidth in another table?
-\begin{table*}
-\centering
-\caption{Overview of the characteristics of the different supercomputers.}
-\begin{tabular}{l|ccccc} 
-\hline
- & Architecture & \# of cores & cores/node & $\alpha$ & $\beta$\\
- \hline
-Mira & IBM BG/Q & $786,432$ & $16$ & $5000$ & $5$\\ 
-Titan & Cray XK7 & $299,008$ & $16$ & $*$ & $*$\\ 
-Beskow & Cray XC40 & $53,632$ & $32$ & $*$ & $*$\\
-\hline
-\end{tabular}
-\label{tab:computer_charac}
-\end{table*}
-
-The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receives messages of various sizes between different processors is measured and values of the latency and bandwidth are deduced.
-
-% Show graph with results of the ping pong test?
-% Explain that we took minimum values
-% Discuss noise and "randomness" of the results on Cray machines
-
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/cachelines.jpg}
+\end{figure}
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/loadbalance.png}
+\end{figure}
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/weak.png}
+\end{figure}
 
 \subsection{Weak and Strong Scaling}
 With link to each subsection in \refsec{sec:abstractions}
 
 
+\subsection{Communication versus Computation}
+The ratio of computation and communication time $r=\frac{T_a}{T_c}$ is a key
+indicator for the strong scaling limit. If communication takes longer than
+computation, the code is deemed to be at the strong scaling limit where the
+scaling diverges significantly from the perfect linear scaling.  
+
+On Mira this limit has consistently been at around 
 
 
-% Regular figure
-%\begin{figure}
-%\centering
-%\includegraphics{}
-%\caption{}
-%\end{figure}
 
-% Resized figure
-%\begin{figure}
-%\centering
-%\includegraphics[height=1in, width=1in]{}
-%\caption{}
-%\end{figure}
-
-% Figure on 2 columns
-%\begin{figure*}
-%\centering
-%\includegraphics{}
-%\caption{}
-%\end{figure*}
 
 
 \section{Conclusions}
