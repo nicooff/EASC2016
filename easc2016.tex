@@ -257,13 +257,13 @@ The test cases were run on three different supercomputers, namely Mira from the 
 \begin{table*}
 \centering
 \caption{Overview of the characteristics of the different supercomputers.}
-\begin{tabular}{l|ccccc} 
+\begin{tabular}{l|cccccc} 
 \hline
- & Architecture & \# of cores & cores/node & $\alpha$ & $\beta$\\
+ & Architecture & \# of cores & cores/node &topology& $\alpha$ & $\beta$\\
  \hline
-Mira & IBM BG/Q & $786,432$ & $16$ & $5000$ & $5$\\ 
-Titan & Cray XK7 & $299,008$ & $16$ & $*$ & $*$\\ 
-Beskow & Cray XC40 & $53,632$ & $32$ & $*$ & $*$\\
+Mira & IBM BG/Q & $786,432$ &5D torus& $16$ & $5000$ & $5$\\ 
+Titan & Cray XK7 & $299,008$ &3D torus& $16$ & $*$ & $*$\\ 
+Beskow & Cray XC40 & $53,632$ &DragonFly& $32$ & $*$ & $*$\\
 \hline
 \end{tabular}
 \label{tab:computer_charac}
@@ -276,10 +276,8 @@ The values for the latency $\alpha$ and the inverse bandwidth $\beta$ have been 
 % Discuss noise and "randomness" of the results on Cray machines
 
 
-\section{Prior Work}
-Link to the complexities in the Fischer paper -> multiplicities
-Explain finite difference link
-\section{Nek}
+
+\section{Nek5000 solver}
 
 \subsection{Method}
 projections
@@ -299,6 +297,9 @@ where $\mathbf{u}$ is the velocity field and $p$ the pressure. The Reynolds numb
 \end {align}
 The nonlinear terms have been gathered in operator $N \left( \mathbf{u}^{k} \right)$. The coefficients $b_k$ and $a_k$ are the coefficients for the explicit discretization of the time derivative and convective terms.
 
+Note to Oana: rewrite in discrete form?? or not
+add projections description and reference
+explain additive schwarz and link to XXT AMG (ohhh man!!! fun fun fun!)
 % \begin{align}
 %  \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
 %  \mathbf{h}_i^n & = N(\mathbf{u}_i^n) + B \mathbf{f}_i + ???, \label{eqn:rhs}\\
@@ -314,6 +315,9 @@ The nonlinear terms have been gathered in operator $N \left( \mathbf{u}^{k} \rig
 %\subsubsection{Coarse grid solver}
 
 % introduce coarse grid solver for the pressure
+\section{Prior Work}
+Link to the complexities in the Fischer paper -> multiplicities
+Explain finite difference link
 
 \subsection{Implementation}
 \label{sec:implementation}
@@ -556,7 +560,7 @@ algorithms in Nek5000 should yield little overhead due to the halo update.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{./figures/cachelines.jpg}
+  \includegraphics[width=\linewidth]{./figures/cachelines.png}
   \caption{Cache Misses}
   \label{fig:cachemisses}
 \end{figure}
