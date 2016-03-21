@@ -249,20 +249,31 @@ Nek5000 is a spectral element, thermal hydraulics code which performs best on co
 
 \subsection{Hardware}
 
-The test cases were run on three different supercomputers, namely Mira from the Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory, USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden. A quick overview of the characteristics of each computer is summarized in Table \ref{tab:computer_charac}
+The test cases were run on three different supercomputers, namely Mira from the
+Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory,
+USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden.
+A quick overview of the characteristics of each computer is summarized in 
+\reftab{tab:computer_charac}. The systems vary from low to large petascale and help to
+establish an overview of the Nek5000 scaling. On Mira, Nek5000 achieves its
+peak performance when run with two processes per BG/Q core, being 32 processes
+per node. The GPUs on Titan can
+currently not be exploited using Nek5000. Thus we relied on that system solely
+on the 16 Opteron cores per node with one process each. The same setup of 1
+process per CPU core was applied for the smallest system Beskow, a Cray XC40.
 
 % Add other fields to the table?
 % Put latency and bandwidth in another table?
 \begin{table*}
 \centering
 \caption{Overview of the characteristics of the different supercomputers.}
-\begin{tabular}{l|cccccc} 
+\begin{tabular}{l|ccccccc} 
 \hline
- & Architecture & \# of cores & cores/node &topology& $\alpha$ & $\beta$\\
+ & Architecture & \# of cores & cores/node &processes/core&topology& latency
+ $\alpha$ &bandwidth  $\beta$\\
  \hline
-Mira & IBM BG/Q & $786,432$ & $16$ & 5D torus & $5000$ & $5$\\ 
-Titan & Cray XK7 & $299,008$ & $16$ &3D torus& $5000$ & $3.1$\\ 
-Beskow & Cray XC40 & $53,632$ & $32$ &DragonFly & $5000$ & $3.3$\\
+Mira & IBM BG/Q & $786,432$ & $16$ &2& 5D torus & $5000$ & $5$\\ 
+Titan & Cray XK7 & $299,008$ & $16$ &1&3D torus& $5000$ & $3.1$\\ 
+Beskow & Cray XC40 & $53,632$ & $32$ &1&DragonFly & $5000$ & $3.3$\\
 \hline
 \end{tabular}
 \label{tab:computer_charac}
@@ -345,9 +356,6 @@ In a similar way, Equation \ref{hmhz_vel}, the Poisson equation for the velocity
 %\subsubsection{Coarse grid solver}
 
 % introduce coarse grid solver for the pressure
-\section{Prior Work}
-Link to the complexities in the Fischer paper -> multiplicities
-Explain finite difference link
 
 \subsection{Implementation}
 \label{sec:implementation}
@@ -405,6 +413,10 @@ imbalance. The CrayPat performance analysis framework is used to sample the code
 % Describe briefly the algorithm behind nek
 % Mention and discuss PN-PN
 % Discuss the two coarse grid solver XXT and AMG
+
+\section{Prior Work}
+Link to the complexities in the Fischer paper -> multiplicities
+Explain finite difference link
 
 \section{Performance and Scaling Analysis}
 \label{sec:analysis}
@@ -560,13 +572,6 @@ versus communication time and load imbalance.
 \label{fig:scaling_titan}
 \end{figure}
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{./figures/imbalancehist.eps}
-  \caption{Histogram of the load imbalance}
-  \label{fig:imbalancehist}
-\end{figure}
-
 
 \subsection{Weak and Strong Scaling}
 
@@ -579,13 +584,20 @@ crosses the communication time.
 
 On Mira this limit has consistently in all 4 cases (see
 \reffig{fig:scaling_mira}). The approximations of values for $\frac{n}{P}$ where
-$r=1$ are listed below:
-  
-\begin{tabular}{ccccc}
-  &ReTau180&ReTau360&ReTau550&ReTau1000\\
-  XXT&2300&1900&2000&\\
-  AMG&2300&2400&3300&4000\\
-\end{tabular}
+$r=1$ are listed in \reftab{tab:stronglimit}
+\begin{table}  
+  \caption{Strong Scaling Limit for all 4 test cases on Beskow, Titan and Mira}
+  \begin{tabular}{c||cccc}
+    \hline
+    \hline
+    &ReTau180&ReTau360&ReTau550&ReTau1000\\
+    \hline
+    XXT&2248&1706&2096&\\
+    AMG&2520&2789&3100&4825\\
+  \end{tabular}
+\end{table}
+
+linear interpolation
 
 In practice we observed a strong scaling limit $r=1$ for XXT at roughly $1900<
 \frac{n}{P} < 2300$ and for AMG at $2300<\frac{n}{P}<4000$, below the $7000$
@@ -630,10 +642,18 @@ management and pipelining on the CPU of Mira.
 Beyond the strong scaling limit, the computation time increases again and
 approaches the linear scaling line again. This is attributed to the load
 imbalance as in the extreme case some processes have to work on one element and
-some processes on two elements. This can be observed in \reffig{sec:imbalance}
+some processes on two elements. This can be observed in
+\reffig{fig:imbalancehist}
 where the imbalance for $Re_{\tau}=1000$ on 32768 nodes creates two spikes in the
 distribution of the execution time. The histogram includes the imbalance of
 workload as well as the resulting imbalance in the communication.
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/histogram.png}
+  \caption{Histogram of the load imbalance}
+  \label{fig:imbalancehist}
+\end{figure}
+
 
 On Mira the communication is mostly latency bound with a small influence of the
 bandwidth. This holds true for peer to peer communication as well as for the
