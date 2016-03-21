@@ -87,7 +87,7 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{On Strong Scaling of Nek5000 on Petascale Systems}
+\title{On the Strong Scaling of Nek5000 on Petascale Systems}
 \subtitle{Subtitle}
 %
 % You need the command \numberofauthors to handle the 'placement
@@ -253,7 +253,7 @@ The test cases were run on three different supercomputers, namely Mira from the
 Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory,
 USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden.
 A quick overview of the characteristics of each computer is summarized in 
-\reftab{tab:computer_charac}. The systems vary from low to large petascale and help to
+\reftab{tab:computer_charac}. The systems vary from small to large petascale and help to
 establish an overview of the Nek5000 scaling. On Mira, Nek5000 achieves its
 peak performance when run with two processes per BG/Q core, being 32 processes
 per node. The GPUs on Titan can
@@ -688,6 +688,10 @@ on the ratio $\frac{n}{P}$.
 \end{figure}
 \section{Conclusions}
 %\end{document}  % This is where a 'short' article might terminate
+We established the strong scaling limit of Nek5000 for the turbulent pipe case
+on three small to large petascale systems. On Mira we can confirm the
+theoratical limits established in \cite{fischer:scaling}, while providing a more
+nuanced picture. 
 
 %ACKNOWLEDGMENTS are optional
 \section{Acknowledgments}
@@ -707,15 +711,14 @@ on the ratio $\frac{n}{P}$.
 %
 %APPENDICES are optional
 %\balancecolumns
-\appendix
+%\appendix
 %Appendix A
-\section{Appendix A}
-\label{sec:plots}
+%\section{Appendix A}
+%\label{sec:plots}
 % This next section command marks the start of
 % Appendix B, and does not continue the present hierarchy
 
 %\balancecolumns % GM June 2007
 % That's all folks!
-Test what is wrong
 \end{document}
 
