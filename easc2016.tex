@@ -87,7 +87,7 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Scaling Behavior of Nek5000}
+\title{On Strong Scaling of Nek5000 on Petascale Systems}
 \subtitle{Subtitle}
 %
 % You need the command \numberofauthors to handle the 'placement
@@ -132,29 +132,29 @@
 % 1st. author
 % 1st. author
 \alignauthor
-Oana Marin\\
-       \affaddr{*}\\
-       \affaddr{*}\\
-       \affaddr{*}\\
-       \email{*}
-% 2nd. author
-\alignauthor
 Nicolas Offermans\\
        \affaddr{Linn\'{e} Flow Center}\\
        \affaddr{KTH Mechanics, Royal Institute of Technology}\\
        \affaddr{10044 Stockholm, Sweden}\\
        \email{nof@mech.kth.se}
+% 2nd. author
+\alignauthor
+Oana Marin\\
+       \affaddr{Mathematics and Computer Science Division}\\
+       \affaddr{Argonne National Laboratory}\\
+       \affaddr{Argonne, IL, USA}\\
+       \email{oanam@mcs.anl.gov}
 % 3rd. author
 \alignauthor 
-Adam Peplinski\\
-       \affaddr{*}\\
-       \affaddr{*}\\
-       \affaddr{*}\\
-       \email{*}
+Michel Schanen\\
+       \affaddr{Mathematics and Computer Science Division}\\
+       \affaddr{Argonne National Laboratory}\\
+       \affaddr{Argonne, IL, USA}\\
+       \email{mschanen@anl.gov}
 \and  % use '\and' if you need 'another row' of author names
 % 4th. author
 \alignauthor 
-Michel Schanen\\
+Adam Peplinski\\
        \affaddr{*}\\
        \affaddr{*}\\
        \affaddr{*}\\
@@ -586,14 +586,32 @@ On Mira this limit has consistently in all 4 cases (see
 \reffig{fig:scaling_mira}). The approximations of values for $\frac{n}{P}$ where
 $r=1$ are listed in \reftab{tab:stronglimit}
 \begin{table}  
-  \caption{Strong Scaling Limit for all 4 test cases on Beskow, Titan and Mira}
+  \caption{Strong Scaling Limit for all 4 test cases on Beskow, Titan and Mira
+  in degrees of freedom per core $\frac{n}{P}$ with 2 processes per core on Mira}
   \begin{tabular}{c||cccc}
     \hline
     \hline
+    {\bf Mira}
     &ReTau180&ReTau360&ReTau550&ReTau1000\\
     \hline
-    XXT&2248&1706&2096&\\
-    AMG&2520&2789&3100&4825\\
+    XXT&4496&3412&4192&\\
+    AMG&5040&5578&6200&9750\\
+    \hline
+    \hline
+    {\bf Beskow}
+    &ReTau180&ReTau360&ReTau550&ReTau1000\\
+    \hline
+    XXT&&&&\\
+    AMG&&&&\\
+    \hline
+    \hline
+    {\bf Titan}
+    &ReTau180&ReTau360&ReTau550&ReTau1000\\
+    \hline
+    XXT&&&&\\
+    AMG&&&&\\
+    \hline
+    \hline
   \end{tabular}
 \end{table}
 
