@@ -114,7 +114,7 @@
 % without further effort on your part as the last section in
 % the body of your article BEFORE References or any Appendices.
 
-\numberofauthors{6} %  in this sample file, there are a *total*
+\numberofauthors{10} %  in this sample file, there are a *total*
 % of EIGHT authors. SIX appear on the 'first-page' (for formatting
 % reasons) and the remaining two appear in the \additionalauthors section.
 %
@@ -153,6 +153,12 @@ Michel Schanen\\
        \email{mschanen@anl.gov}
 \and  % use '\and' if you need 'another row' of author names
 % 4th. author
+\alignauthor
+Jing Gong\\
+       \affaddr{PDC-HPC}\\
+       \affaddr{KTH, Royal Institute of Technology}\\
+       \affaddr{10044 Stockholm, Sweden}\\
+       \email{gongjing@kth.se}
 \alignauthor 
 Adam Peplinski\\
        \affaddr{*}\\
@@ -167,13 +173,14 @@ Philipp Schlatter\\
        \affaddr{*}\\
        \email{*}
 % 6th. author
-\alignauthor
-Jing Gong\\
-       \affaddr{PDC-HPC}\\
-       \affaddr{KTH, Royal Institute of Technology}\\
-       \affaddr{10044 Stockholm, Sweden}\\
-       \email{gongjing@kth.se}
 }
+\additionalauthors{Additional authors: Paul Fischer (UIUC,
+email: {\texttt{jsmith@affiliation.org}}) and Elia Merzari
+(ANL, email: {\texttt{jpkumquat@consortium.net}})
+and Aleks Obabko
+(ANL, email: {\texttt{jpkumquat@consortium.net}})
+and Maxwell Hutchinson
+(ANL, email: {\texttt{jpkumquat@consortium.net}}).}
 % There's nothing stopping you putting the seventh, eighth, etc.
 % author on the opening page (as the 'third row') but we ask,
 % for aesthetic reasons that you place these 'additional authors'
@@ -592,21 +599,21 @@ $r=1$ are listed in \reftab{tab:stronglimit}
     \hline
     \hline
     {\bf Mira}
-    &ReTau180&ReTau360&ReTau550&ReTau1000\\
+    &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
     XXT&4496&3412&4192&\\
     AMG&5040&5578&6200&9750\\
     \hline
     \hline
     {\bf Beskow}
-    &ReTau180&ReTau360&ReTau550&ReTau1000\\
+    &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
     XXT&&&&\\
     AMG&&&&\\
     \hline
     \hline
     {\bf Titan}
-    &ReTau180&ReTau360&ReTau550&ReTau1000\\
+    &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
     XXT&&&&\\
     AMG&&&&\\
@@ -630,10 +637,7 @@ algorithms in Nek5000 should yield little overhead due to the halo update.
   \includegraphics[width=\linewidth]{./figures/cachelines.png}
   \caption{Cache Misses}
   \label{fig:cachemisses}
-  \caption{Cache misses on Mira for all 4 test cases are decreasing with
-  decreasing degrees of freedom per process. For $Re_{\tau}=180$, we observe a
-  sudden spike at the run with 1 element per process. The dashed red line is the
-  cache size after which all gridpoints would theoratically fit into cache.}
+  \caption{Cache misses on Mira for all 4 test cases(low to high degrees of freedom in direction of the arrow) The dashed red line: L1 cache size}
 \end{figure}
 
 All test cases on all the systems show a super linear scaling. This
@@ -646,8 +650,8 @@ data that lies in the cache.
 To investigate this, we extracted the cache misses on Mira provided by HPM (see
 \reffig{fig:cachemisses}). Mira is equipped with L1 cache of 16kb. The L2 cache
 of 32mb, that is located at the node level, is irrelevant as we had consistently
-over 97\% cache misses. The L1 cache can be filled with $2048$ double precision
-numbers. As we run with 2 processes per core, this would be at roughly 1000
+over 97\% cache misses. The L1 cache can be filled with $2048$ double precision, see
+\reffig{fig:cachemisses} the vertical dashed redline which inidicates the cache size below which all gridpoints would theoretically fit into cache. As we run with 2 processes per core, this would be at roughly 1000
 degrees of freedom per process. Although the data fields achieve those sizes only at the strong scaling
 limit we do observe a general decrease in cache misses with decreasing
 $\frac{n}{P}$. The only exception is the test case for $Re_{\tau}=180$ where we
@@ -668,7 +672,7 @@ workload as well as the resulting imbalance in the communication.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/histogram.png}
-  \caption{Histogram of the load imbalance}
+  \caption{Histogram of the load imbalance at $2.184\times10^9$ degrees of freedom: number of processes per time spent in communication. Red bins: .., blue bins:...}
   \label{fig:imbalancehist}
 \end{figure}
 
