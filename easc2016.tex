@@ -277,13 +277,19 @@ Results for the ping-pong test results are shown in Figure \ref{fig:pingpong} al
 
 \begin{figure}
   \centering
-  \subfigure[Beskow]{
+  \subfigure[Ping-pong on Beskow]{
   \includegraphics[width=\linewidth]{./figures/pingpong_beskow.png}
+  \label{fig:pingpong_beskow}
   }
-  \subfigure[Titan]{
+  \subfigure[Ping-pong on Titan]{
   \includegraphics[width=\linewidth]{./figures/pingpong_titan.png}
+  \label{fig:pingpong_titan}
   }
-  \caption{Ping-pong test on Beskow and Titan.}
+  \subfigure[Ping-pong and all-reduce on Mira as illustrated in \cite{fischer:scaling}]{
+  \includegraphics[width=\linewidth]{./figures/pingpong_mira.png}
+  \label{fig:pingpong_mira}
+  }
+  \caption{Latency and Bandwidth Tests on Mira}
   \label{fig:pingpong}
 \end{figure}
 
@@ -485,7 +491,7 @@ element level so that one element may not be partitioned further.
 As anticipated in \refsec{sec:timers}, we measure the communication time and
 computation time of the chosen 20 timesteps. 
 
-In \cite{fischer:scaling} the point where $r=\dfrac{T_a}{T_c}=1$ was estimated
+In \cite{fischer:scaling} the strong scaling limit where $r=\dfrac{T_a}{T_c}=1$ was estimated
 to be at about $\frac{n}{P}=2000$ for the conjugent gradient (CG) and $20000$ or
 $7000$ (BG/Q) for the algebraic multigrid (AMG). As described in \refsec{sec:code}, the
 Nek5000 solvers XXT and PNPN consist of several CG and AMG solves. Furthermore,
@@ -517,8 +523,6 @@ versus communication time and load imbalance.
   \caption{BG/Q Mira}
   \label{fig:scaling_mira}
 \end{figure}
-
-\newpage
 
 \begin{figure}
   \centering
@@ -563,10 +567,6 @@ versus communication time and load imbalance.
   \label{fig:imbalancehist}
 \end{figure}
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{./figures/loadbalance.png}
-\end{figure}
 
 \subsection{Weak and Strong Scaling}
 
@@ -591,8 +591,7 @@ In practice we observed a strong scaling limit $r=1$ for XXT at roughly $1900<
 \frac{n}{P} < 2300$ and for AMG at $2300<\frac{n}{P}<4000$, below the $7000$
 anticipated in \cite{fischer:scaling}. 
 
-However, there are two intricacies related to the compute time scaling of
-Nek5000. In theory the compute time scaling should exactly match linear scaling
+In theory the compute time scaling should exactly match linear scaling
 as computational work is distributed according to the ratio $\frac{n}{P}$. All
 algorithms in Nek5000 should yield little overhead due to the halo update. 
 
@@ -601,27 +600,46 @@ algorithms in Nek5000 should yield little overhead due to the halo update.
   \includegraphics[width=\linewidth]{./figures/cachelines.png}
   \caption{Cache Misses}
   \label{fig:cachemisses}
+  \caption{Cache misses on Mira for all 4 test cases are decreasing with
+  decreasing degrees of freedom per process. For $Re_{\tau}=180$, we observe a
+  sudden spike at the run with 1 element per process. The dashed red line is the
+  cache size after which all gridpoints would theoratically fit into cache.}
 \end{figure}
 
 All test cases on all the systems show a super linear scaling. This
 observation holds true with all timers and profilers switched off.
 Numerically there is no explanation for this behavior. 
 
-First, the usual explanation for super linear scaling are a sudden decrease of the cache
+The usual explanation for super linear scaling are a sudden decrease of the cache
 misses for decreasing $\frac{n}{P}$, as parts of the solver can entirely work on
 data that lies in the cache. 
 To investigate this, we extracted the cache misses on Mira provided by HPM (see
 \reffig{fig:cachemisses}). Mira is equipped with L1 cache of 16kb. The L2 cache
 of 32mb, that is located at the node level, is irrelevant as we had consistently
 over 97\% cache misses. The L1 cache can be filled with $2048$ double precision
-numbers. Although the data fields achieve those sizes only at the strong scaling
+numbers. As we run with 2 processes per core, this would be at roughly 1000
+degrees of freedom per process. Although the data fields achieve those sizes only at the strong scaling
 limit we do observe a general decrease in cache misses with decreasing
-$\frac{n}{P}$. We therefor attribute the super linear scaling to cache
+$\frac{n}{P}$. The only exception is the test case for $Re_{\tau}=180$ where we
+have a sudden spike in cache misses where we run at one element per core. This
+is the only run that was performed at a process count that is not to the power
+of two.
+In summary, we attribute the super linear scaling to cache
 management and pipelining on the CPU of Mira. 
 
-Second, the super linear scaling if not  
+Beyond the strong scaling limit, the computation time increases again and
+approaches the linear scaling line again. This is attributed to the load
+imbalance as in the extreme case some processes have to work on one element and
+some processes on two elements. This can be observed in \reffig{sec:imbalance}
+where the imbalance for $Re_{\tau}=1000$ on 32768 nodes creates two spikes in the
+distribution of the execution time. The histogram includes the imbalance of
+workload as well as the resulting imbalance in the communication.
 
-Through the four test cases we can derive a weak scaling pictures in
+On Mira the communication is mostly latency bound with a small influence of the
+bandwidth. This holds true for peer to peer communication as well as for the
+all-reduce (see \reffig{fig:pingpong}).
+
+Across the four test cases we can observe a weak scaling in
 \reffig{fig:weakscaling}. It proves that the scaling on Mira is only dependent
 on the ratio $\frac{n}{P}$. 
 \begin{figure}
