@@ -273,14 +273,14 @@ process per CPU core was applied for the smallest system Beskow, a Cray XC40.
 \begin{table*}
 \centering
 \caption{Overview of the characteristics of the different supercomputers.}
-\begin{tabular}{l|ccccccc} 
+\begin{tabular}{l|cccccccc} 
 \hline
- & Architecture & \# of cores & cores/node &processes/core&topology& latency
- $\alpha$ &bandwidth  $\beta$\\
+ & Architecture & \# cores & Cores/node & Processes/core & Topology & Latency
+ $\alpha$ & Inv. bw.  $\beta$ & Inv. flop/s $t_a (\unit[]{\mu s})$\\
  \hline
-Mira & IBM BG/Q & $786,432$ & $16$ &2& 5D torus & $5000$ & $5$\\ 
-Titan & Cray XK7 & $299,008$ & $16$ &1&3D torus& $5000$ & $3.1$\\ 
-Beskow & Cray XC40 & $53,632$ & $32$ &1&DragonFly & $5000$ & $3.3$\\
+Mira & IBM BG/Q & $786,432$ & $16$ &2& 5D torus & $5000$ & $5$ & $10^{-3}$\\ 
+Titan & Cray XK7 & $299,008$ & $16$ &1&3D torus& $???$ & $???$ &\\ % alpha*= 2.2515e-06 s, beta*= 1.4179e-09, t_a= ???, alpha=alpha*/t_a, beta_beta*/t_a
+Beskow & Cray XC40 & $53,632$ & $32$ &1&DragonFly & $???$ & $???$ &\\ % alpha*=2.5486e-06 s, beta*=8.2542e-10 wd/s, t_a= ???, alpha=alpha*/t_a, beta=beta*/t_a
 \hline
 \end{tabular}
 \label{tab:computer_charac}
@@ -290,8 +290,7 @@ The values for the non-dimensional latency $\alpha$ and the inverse bandwidth $\
 \begin{equation}
  t_c(m) = (\alpha + \beta m) t_a,
 \end{equation}
-where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. (Inverse of the clock frequency ???) 
-Results for the ping-pong test results are shown in Figure \ref{fig:pingpong} along with the linear model for Beskow and Titan.
+where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. Results for the ping-pong test results are shown in Figure \reffig{fig:pingpong} along with the linear model for Beskow and Titan. The non-dimensional parameters $\alpha$ and $\beta$ are a relative measure of the computational to communication times. Consequently, it is expected that on a computer with high values of those parameters, like Beskow, the scalability limit will occur for a lower number of cores because communication will become a limitation earlier. It does not mean however that such a computer is slower in terms of absolute compute time. For example, we expect Beskow to be faster than Mira and Titan because of its newer and faster CPUs and interconnection network, despite higher values of $\alpha$ and $\beta$.
 
 \begin{figure}
   \centering
@@ -328,7 +327,7 @@ There are two main solvers available within Nek5000 for computing the solution o
  \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u \cdot \nabla}) \mathbf{u} & = - \nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} + \mathbf{f} \label{eqn:NS_momentum},\\
  \nabla \cdot \mathbf{u} & = 0, \label{eqn:NS_continuity}
 \end{align}
-where $\mathbf{u}$ is the velocity field and $p$ the pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations (\ref{eqn:NS_momentum})  and (\ref{eqn:NS_continuity}) are called the continuity and momentum equations respectively. The numerical integration of the momentum equation is done explicitely for the nonlinear convective terms and implicitely for the viscous and pressure term according to \cite{Tomboulides1997}. This method is referred to as $\mathbb{P}_N\mathbb{P}_N$ and leads to the following system of equations for one iteration
+where $\mathbf{u}$ is the velocity field and $p$ the pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations (\refeqn{eqn:NS_momentum})  and (\refeqn{eqn:NS_continuity}) are called the continuity and momentum equations respectively. The numerical integration of the momentum equation is done explicitely for the nonlinear convective terms and implicitely for the viscous and pressure term according to \cite{Tomboulides1997}. This method is referred to as $\mathbb{P}_N\mathbb{P}_N$ and leads to the following system of equations for one iteration
 \begin {align}
  \mathbf{F} \left( \mathbf{u}^{n} \right) & = \sum_{j=1}^{k} \frac{-b_j}{\Delta t} \mathbf{u}^{n+1-j} + \sum_{j=1}^{k} a_j N \left( \mathbf{u}^{n+1-j} \right) +  \mathbf{f}^{n+1} \label{eqn:rhs1}\\
  \mathbf{\tilde{F}} \left( \mathbf{u}^{n} \right) & = \mathbf{F}\left(\mathbf{u}^{n}\right) + \mu \sum_{j=1}^{k} a_j \left( \nabla \times \left( \nabla \times \mathbf{u}^{n+1-j} \right) \right) \label{eqn:rhs2} \\
@@ -341,13 +340,13 @@ Note to Oana: rewrite in discrete form?? or not
 add projections description and reference
 explain additive schwarz and link to XXT AMG (ohhh man!!! fun fun fun!)
 
-Equation \ref{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main source of stiffness and its efficient resolution by iterative solver is preceded by two steps. First of all, the pressure at each time iteration is projected onto a subspace of previous solutions and serves as first guess for the iterative solver. We used a subspace of length $20$ in the present case. This method, described in \ref{tufo:terascale} (right paper?), has been shown to reduce the iteration count by a factor $2.5-5$. Then, A pressure preconditioner is built based on the additive overlapping Schwarz method and a coarse grid solve. Is is given by 
+Equation \refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main source of stiffness and its efficient resolution by iterative solver is preceded by two steps. First of all, the pressure at each time iteration is projected onto a subspace of previous solutions and serves as first guess for the iterative solver. We used a subspace of length $20$ in the present case. This method, described in \cite{tufo:terascale} (right paper?), has been shown to reduce the iteration count by a factor $2.5-5$. Then, A pressure preconditioner is built based on the additive overlapping Schwarz method and a coarse grid solve. Is is given by 
 \begin{equation}
  M_0^{-1} := R_0^T A_{0}^{-1} R_0 + \sum_{k=1}^{K} R_k^T \tilde{A}_k^{-1} R_k.
 \end{equation}
 The overlapping part require local solves on each subdomain and is easily parallelized \cite{Fischer199784,Fischer2005}. The coarse grid solve is more difficult to parallelize and can be performed in two different ways. The first method is XXT \cite{Tufo2001151}, where the solution on the coarse grid is projected on a basis that constitutes a quasi-sparse factorization of $A_0^{-1}$. The second method is an algebraic multigrid solver (AMG) that operates a smoothing, a coarsening and a interpolation operation on a predefined number of coarse grid levels. Finally, the pressure equatin is solved with the generalized minimal residual method (GMRES).
 
-In a similar way, Equation \ref{hmhz_vel}, the Poisson equation for the velocity, is solved using the conjugate gradient (CG) iterative solver but without the need for a Schwarz method or a coarse grid solve.
+In a similar way, Equation \refeqn{eqn:hmhz_vel}, the Poisson equation for the velocity, is solved using the conjugate gradient (CG) iterative solver but without the need for a Schwarz method or a coarse grid solve.
 % \begin{align}
 %  \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
 %  \mathbf{h}_i^n & = N(\mathbf{u}_i^n) + B \mathbf{f}_i + ???, \label{eqn:rhs}\\
@@ -357,8 +356,8 @@ In a similar way, Equation \ref{hmhz_vel}, the Poisson equation for the velocity
 %  \mathbf{p}^{n+1} &= \mathbf{p}^{n} + \mathbf{\delta p}^{n}, \label{eqn:update_p} \\
 %  \mathbf{u}_i^{n+1}& = \mathbf{u}_i^{n} + \mathbf{\delta u}_i^{n}.  \label{eqn:update_u} 
 % \end{align}
-% The operators $A$ and $B$ represent the discrete Laplacian operator and the mass matrix respectively. The index $i=1,2,3$ represents the 3 spatial directions $x$, $y$ and $z$. The intermediate velocity $\mathbf{u}_i^*$ is extrapolated using a third order Adams-Bashforth scheme in Equation (\ref{eqn:extrap_vel}). The corresponding coefficients $\beta_k$ are given by $\beta_0 = \frac{23}{12}$, $\beta_1 = \frac{-4}{3}$ and $\beta_2 = \frac{5}{12}$ (??). The term $\mathbf{h}_i^n$ from equation (\ref{eqn:rhs}) contains the nonlinear convective term $N(\mathbf{u}_i^n)$ evaluated explicitely, the external forcing $\mathbf{f}_i$ and ???. Equation (\ref{eqn:hmhz_pres}) is solved using a Generalized minimal residual method (GMRES), while equation (\ref{eqn:hmhz_vel}) is solved using the conjugate gradient (CG) mehtod. Furthermore, both the pressure and velocity vectors are projected onto a space of previous solutions in order to speed up the convergence of the iterative solvers. Projections occur before and after the 
-% iterative solver. %When solving equations (\ref{eqn:hmhz_pres}) and (\ref{eqn:hmhz_vel}), we obtain the corrections for the pressure and the velocity that we can use to update those variables in Equations \ref{eqn:update_p} and \ref{eqn:update_u}.
+% The operators $A$ and $B$ represent the discrete Laplacian operator and the mass matrix respectively. The index $i=1,2,3$ represents the 3 spatial directions $x$, $y$ and $z$. The intermediate velocity $\mathbf{u}_i^*$ is extrapolated using a third order Adams-Bashforth scheme in Equation (\refeqn{eqn:extrap_vel}). The corresponding coefficients $\beta_k$ are given by $\beta_0 = \frac{23}{12}$, $\beta_1 = \frac{-4}{3}$ and $\beta_2 = \frac{5}{12}$ (??). The term $\mathbf{h}_i^n$ from equation (\refeqn{eqn:rhs}) contains the nonlinear convective term $N(\mathbf{u}_i^n)$ evaluated explicitely, the external forcing $\mathbf{f}_i$ and ???. Equation (\refeqn{eqn:hmhz_pres}) is solved using a Generalized minimal residual method (GMRES), while equation (\refeqn{eqn:hmhz_vel}) is solved using the conjugate gradient (CG) mehtod. Furthermore, both the pressure and velocity vectors are projected onto a space of previous solutions in order to speed up the convergence of the iterative solvers. Projections occur before and after the 
+% iterative solver. %When solving equations (\refeqn{eqn:hmhz_pres}) and (\refeqn{eqn:hmhz_vel}), we obtain the corrections for the pressure and the velocity that we can use to update those variables in Equations \refeqn{eqn:update_p} and \refeqn{eqn:update_u}.
 
 %\subsubsection{Coarse grid solver}
 
@@ -400,7 +399,7 @@ clock time using the MPI timer ({\tt MPI\_Wtime}) followed by a barrier
 ({\tt MPI\_Barrier}) guaranteeing coherent and synchronized measurements. We
 have run the code without synchronization and timers to evaluate the created
 overhead due to our measurements. In all instances this overhead has been far
-below 5\%. The main timer computes the total time spent in the outer timestepping loop for the last 20 timesteps. Then, we have timers for the compute time of $\mathbf{F} \left( \mathbf{u}^{n} \right)$, i.e.\ the right hand side of equation (\ref{eqn:rhs1}) and the right hand side of equation (\ref{eqn:hmhz_pres}). We also time all the different projections separately, using 4 timers (one timer before solving and one after for both pressure and velocity). The time spend in the Helmholtz solves is measured as well for pressure and velocity. Within the pressure solver, we put a timer around the coarse grid solve. Finally, we gather in an additional timer most of the remaining computations such that our timers account for more that 95\% of the total time. We learn from these timers that the projections are in most cases the most time consuming functions, followed by the Helmholtz solves. However, these timers do not provide information about the repartition between the time spent in computation and communication, which is the core element when assessing scalability and efficiency of a parallel code. Therefore, we do not present the results obtained with those timers and instead investigate in more details the timings produced by more adapted sampling and profiling tools.
+below 5\%. The main timer computes the total time spent in the outer timestepping loop for the last 20 timesteps. Then, we have timers for the compute time of $\mathbf{F} \left( \mathbf{u}^{n} \right)$, i.e.\ the right hand side of equation (\refeqn{eqn:rhs1}), and of the right hand side of equation (\refeqn{eqn:hmhz_pres}). We also time all the different projections separately, using 4 timers (one timer before solving and one after for both pressure and velocity). The time spent in the Helmholtz solves is measured as well for pressure and velocity. Within the pressure solver, we put a timer around the coarse grid solve. Finally, we gather in an additional timer most of the remaining computations such that our timers account for more that 95\% of the total time. We learn from these timers that the projections are in most cases the most time consuming functions, followed by the Helmholtz solves. However, these timers do not provide information about the repartition between the time spent in computation and communication, which is the core element when assessing scalability and efficiency of a parallel code. Therefore, we do not present the results obtained with those timers and instead investigate in more details the timings produced by more adapted sampling and profiling tools.
 \paragraph{Craypat and Hardware Performance Monitor}
 In order to measure the time spent in communication we relied on Craypat for
 Beskow and Titan and on Hardware Performance Monitor (HPM) for Mira. Both tools
@@ -448,7 +447,7 @@ factors as load imbalance, cache misses or accelerated collective communications
 
 The communication is subdivided into nearest neighbour (NN) and so called
 allreductions. As the NN hints, the communication takes place between a spatial
-partition and all of its neighbours. In a 3D cubic with cubic partitioning this
+partition and all of its neighbours. In a 3D cube with cubic partitioning this
 would be 8 for the vertices, 4 for the edges and 2 for the faces. We assume that
 all NN on mesh are also nearest neighbours on the partitioning mapped to the
 physical topology of the hardware. We will prove in \refsec{sec:abstractions}
@@ -471,7 +470,7 @@ compare the scaling of Nek to other CFD software.
 \subsection{Test Case: Pipe}
 \label{sec:pipe}
 
-The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \ref{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
+The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \reftab{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
 
 \begin{table}
 \centering
@@ -522,7 +521,7 @@ various systems based on a generic well known case in CFD (see
 \refsec{sec:pipe}). 
 
 The scaling plots for all three
-systems in \reffig{fig:mira} and \reffig{fig:beskow} are the fundamental
+systems in \reffig{fig:scaling_mira}, \reffig{fig:scaling_titan}, and \reffig{fig:scaling_beskow} are the fundamental
 measurements for our further analysis of the weak/strong scaling, computation
 versus communication time and load imbalance.
 \begin{figure}
@@ -589,12 +588,11 @@ scaling diverges significantly from the perfect linear scaling. For both XXT and
 AMG this point is clearly determined in the plots where the computation time
 crosses the communication time. 
 
-On Mira this limit has consistently in all 4 cases (see
-\reffig{fig:scaling_mira}). The approximations of values for $\frac{n}{P}$ where
-$r=1$ are listed in \reftab{tab:stronglimit}
+The approximations of values for $\frac{n}{P}$ where
+$r=1$ are listed in \reftab{tab:stronglimit}.
 \begin{table}  
   \caption{Strong Scaling Limit for all 4 test cases on Beskow, Titan and Mira
-  in degrees of freedom per core $\frac{n}{P}$ with 2 processes per core on Mira}
+  in degrees of freedom per core $\frac{n}{P}$ with 2 processes per core on Mira, 1 process per core on Beskow and Titan}
   \begin{tabular}{c||cccc}
     \hline
     \hline
@@ -608,23 +606,25 @@ $r=1$ are listed in \reftab{tab:stronglimit}
     {\bf Beskow}
     &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
-    XXT&&&&\\
-    AMG&&&&\\
+    XXT&45700&19200&&\\
+    AMG&24800&33000&&\\
     \hline
     \hline
     {\bf Titan}
     &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
-    XXT&&&&\\
-    AMG&&&&\\
+    XXT&9000&24000&65000&228000\\
+    AMG&11000&36000&68000&132000\\
     \hline
     \hline
   \end{tabular}
+  \label{tab:stronglimit}
 \end{table}
 
 linear interpolation
 
-In practice we observed a strong scaling limit $r=1$ for XXT at roughly $1900<
+On Mira this limit has consistently in all 4 cases (see
+\reffig{fig:scaling_mira}). In practice we observed a strong scaling limit $r=1$ for XXT at roughly $1900<
 \frac{n}{P} < 2300$ and for AMG at $2300<\frac{n}{P}<4000$, below the $7000$
 anticipated in \cite{fischer:scaling}. 
 
@@ -644,7 +644,7 @@ All test cases on all the systems show a super linear scaling. This
 observation holds true with all timers and profilers switched off.
 Numerically there is no explanation for this behavior. 
 
-The usual explanation for super linear scaling are a sudden decrease of the cache
+The usual explanation for super linear scaling is a sudden decrease of the cache
 misses for decreasing $\frac{n}{P}$, as parts of the solver can entirely work on
 data that lies in the cache. 
 To investigate this, we extracted the cache misses on Mira provided by HPM (see
@@ -690,6 +690,17 @@ on the ratio $\frac{n}{P}$.
   \caption{Weak Scaling}
   \label{fig:weakscaling}
 \end{figure}
+
+% Beskow
+
+On Beskow, superlinear scaling is also visible over a large range of cores in Figure \reffig{fig:scaling_beskow}. This shows once again the good strong scaling of Nek5000. We do not possess profiling results for Beskow and cannot study the cache misses but we assume that the reason for superlinearity is similar as for Mira. The scalability limit $r=1$ is more delicate to locate accurately because of the high variance in communication times (see Figure \reffig{fig:pingpong_beskow}). We nevertheless present the scalability limit for the particular results from Figure \reffig{fig:scaling_beskow} while keeping in mind that the intersection point would probably move significantly if the test had to be run again, depending on the nodes allocation, network traffic on the computer... However, we note that the scalability limit on Beskow is roughly one order of magnitude higher as on Mira in terms of degrees of freedom per core and $r=1$ is obtained at about $\frac{n}{P} \sim 20000 - 50000$. This is consistent with the values for the non-dimensional latency and inverse bandwidth from Table \reffig{tab:computer_charac} and the fact that Beskow has faster CPUs.
+NOTE: Finish results analysis and comment on weak scaling when data for 16k and 32k available.
+
+% Titan
+
+Superlinear scaling occurs on Titan as well as we see in Figure \reffig{fig:scaling_titan} and cache misses is once more assumed to be the reason. On the other hand, the scalability limit for this computer exhibits a different behaviour and the the number of degrees of freedom per core where $r=1$ increases significantly with bigger cases as we see from Table \reffig{tab:stronglimit}. The limit goes from $\frac{n}{P} \sim 9000$ to $\frac{n}{P} \sim 228000$ between the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for XXT. It goes from $\frac{n}{P} \sim 11000$ to $\frac{n}{P} \sim 132000$ between the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for AMG. This result means that despite good strong scaling, weak scaling is not obtained on Titan.
+
+
 \section{Conclusions}
 %\end{document}  % This is where a 'short' article might terminate
 We established the strong scaling limit of Nek5000 for the turbulent pipe case

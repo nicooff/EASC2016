@@ -24,7 +24,7 @@ commamg=NaN(size(b,2),size(a,2));
 compamg=NaN(size(b,2),size(a,2));
 
 for j=1:length(b)
-formatt='mira/data_ReTau180';
+formatt='/data_ReTau180_titan';
 filename=sprintf(formatt);
 A = importdata(filename,delimiterIn,headerlinesIn);
 ll=length(A(:,1));
@@ -35,7 +35,7 @@ compxxt(1:ll,1)=A(:,4);
 totalamg(1:ll,1)=A(:,5);
 commamg(1:ll,1)=A(:,6);
 compamg(1:ll,1)=A(:,7);
-formatt='mira/data_ReTau360';
+formatt='/data_ReTau360_titan';
 filename=sprintf(formatt,b(j));
 A = importdata(filename,delimiterIn,headerlinesIn);
 i=find(procs(:,1)==A(1,1));
@@ -47,7 +47,7 @@ compxxt(i:i+ll-1,2)=A(:,4);
 totalamg(i:i+ll-1,2)=A(:,5);
 commamg(i:i+ll-1,2)=A(:,6);
 compamg(i:i+ll-1,2)=A(:,7);
-formatt='mira/data_ReTau550';
+formatt='/data_ReTau550_titan';
 filename=sprintf(formatt);
 A = importdata(filename,delimiterIn,headerlinesIn);
 i=find(procs(:,2)==A(1,1));
@@ -59,19 +59,21 @@ compxxt(i:i+ll-1,3)=A(:,4);
 totalamg(i:i+ll-1,3)=A(:,5);
 commamg(i:i+ll-1,3)=A(:,6);
 compamg(i:i+ll-1,3)=A(:,7);
-formatt='mira/data_ReTau1000';
+formatt='/data_ReTau1000_titan';
 filename=sprintf(formatt);
 A = importdata(filename,delimiterIn,headerlinesIn);
 i=find(procs(:,3)==A(1,1));
 ll=length(A(:,1));
 procs(i:i+ll-1,4)=A(:,1);
-totalxxt(i:i+ll-1,4)=NaN;
-commxxt(i:i+ll-1,4)=NaN;
-compxxt(i:i+ll-1,4)=NaN;
-totalamg(i:i+ll-1,4)=A(:,2);
-commamg(i:i+ll-1,4)=A(:,3);
-compamg(i:i+ll-1,4)=A(:,4);
+totalxxt(i:i+ll-1,4)=A(:,2);
+commxxt(i:i+ll-1,4)=A(:,3);
+compxxt(i:i+ll-1,4)=A(:,4);
+totalamg(i:i+ll-1,4)=A(:,5);
+commamg(i:i+ll-1,4)=A(:,6);
+compamg(i:i+ll-1,4)=A(:,7);
 end
+
+
 % %weak scaling lot
 % totamg=totalamg(2:end,:);
 % imagesc(log(b(2:end)*32),log(dofs),totamg')
@@ -82,47 +84,59 @@ end
 % axis square
 % colorbar
 
+
+figure
+loglog(procs(:,1),compxxt(:,1),'r')
+hold on
+loglog(procs(:,1),commxxt(:,1),'b')
+hold off
+%plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
+axis tight
+[x1 y1]=ginput(1)
+
+%keyboard
+figure
+loglog(procs(:,2),compxxt(:,2),'r')
+hold on
+loglog(procs(:,2),commxxt(:,2),'b')
+hold off
+%plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
+axis tight
+[x2 y2]=ginput(1)
+
+% keyboard
+figure
+loglog(procs(:,3),compxxt(:,3),'r')
+hold on
+loglog(procs(:,3),commxxt(:,3),'b')
+hold off
+%plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
+axis tight
+[x3 y3]=ginput(1)
 % 
-% figure
-% loglog(procs(:,1),compxxt(:,1),'r')
-% hold on
-% loglog(procs(:,1),commxxt(:,1),'b')
-% hold off
-% %plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
-% axis tight
-% [x y]=ginput(1)
-
 % keyboard
-% figure
-% loglog(procs(:,2),compxxt(:,2),'r')
-% hold on
-% loglog(procs(:,2),commxxt(:,2),'b')
-% hold off
-% %plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
-% axis tight
-% [x y]=ginput(1)
 
-% keyboard
-% figure
-% loglog(procs(:,3),compxxt(:,3),'r')
-% hold on
-% loglog(procs(:,3),commxxt(:,3),'b')
-% hold off
-% %plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
-% axis tight
-% [x y]=ginput(1)
+figure
+loglog(procs(:,4),compxxt(:,4),'r')
+hold on
+loglog(procs(:,4),commxxt(:,4),'b')
+hold off
+%plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
+axis tight
+[x4 y4]=ginput(1)
 % 
 % keyboard
 %%% xxt int points
 % x is nodes in logscale
-x(1) = 259.5579; y(1) = 1.4926; 
-x(2) = 2.2236e+03; y(2) =1.8102;
-x(3) = 6.5141e+03; y(3) =3.0878;
+x(1) = x1; y(1) = y1; 
+x(2) = x2; y(2) = y2;
+x(3) = x3; y(3) = y3;
+x(4) = x4; y(4) = y4;
 
 xxt_int=[x; y];
-%to find N/P one needs to do dofs/x/32
+%to find N/P one needs to do dofs/x/16
 
-sslim_xxt=dofs(1:3)./xxt_int(1,:)/32
+sslim_xxt=dofs(1:4)./xxt_int(1,:)/16
 
 % I would average this to about 2000
 %%%%%%%%%%%%%%for amg
@@ -134,8 +148,8 @@ loglog(procs(:,1),commamg(:,1),'b')
 hold off
 %plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
 axis tight
-set(gca,'XTick',procs(:,1))
-%[x y]=ginput(1)
+%set(gca,'XTick',procs(:,1))
+[x1 y1]=ginput(1)
 
 figure
 loglog(procs(:,2),compamg(:,2),'r')
@@ -144,7 +158,7 @@ loglog(procs(:,2),commamg(:,2),'b')
 hold off
 %plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
 axis tight
-%[x y]=ginput(1)
+[x2 y2]=ginput(1)
 
 figure
 loglog(procs(:,3),compamg(:,3),'r')
@@ -153,8 +167,7 @@ loglog(procs(:,3),commamg(:,3),'b')
 hold off
 %plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
 axis tight
-%[x y]=ginput(1)
-
+[x3 y3]=ginput(1)
 
 figure
 loglog(procs(:,4),compamg(:,4),'r')
@@ -163,19 +176,19 @@ loglog(procs(:,4),commamg(:,4),'b')
 hold off
 %plot(procs(:,1),compxxt(:,1)-commxxt(:,1),'k')
 axis tight
-%[x y]=ginput(1)
+[x4 y4]=ginput(1)
 
 %%%%%%%%%%%%amg int points
-x(1) = 231.5300; y(1) = 1.6765 ;
-x(2) = 1.3602e+03; y(2) = 2.1183;
-x(3) = 4.4047e+03; y(3) = 2.6172 ;
-x(4) = 1.4145e+04; y(4) =  2.9021;
+x(1) = x1; y(1) = y1;
+x(2) = x2; y(2) = y2;
+x(3) = x3; y(3) = y3;
+x(4) = x4; y(4) = y4;
 amg_int=[x; y]
-%to find N/P one needs to do dofs/x/32
-sslim_amg=dofs./amg_int(1,:)/32
+%to find N/P one needs to do dofs/x/16
+sslim_amg=dofs./amg_int(1,:)/16
 
 % for j=1:4
 % diffxxt(:,j)=compxxt(:,j)-commxxt(:,j);
 % diffamg(:,j)=compamg(:,j)-commamg(:,j);
 % end
-%
+% 
