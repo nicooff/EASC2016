@@ -131,7 +131,7 @@ axis tight
 x(1) = x1; y(1) = y1; 
 x(2) = x2; y(2) = y2;
 x(3) = x3; y(3) = y3;
-x(4) = x4; y(3) = y4;
+x(4) = x4; y(4) = y4;
 
 xxt_int=[x; y];
 %to find N/P one needs to do dofs/x/32
