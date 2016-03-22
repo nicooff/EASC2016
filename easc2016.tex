@@ -426,20 +426,21 @@ imbalance. The CrayPat performance analysis framework is used to sample the code
 
 \section{Performance and Scaling Analysis}
 \label{sec:analysis}
-We assume that large scale runtime performance is influenced by 
+We assume that large scale runtime performance is influenced mainly by 
 \begin{enumerate}
-  \item Network topology \label{enum:a}
+  \item Network topology, \label{enum:a}
   \item Time $T_a$ and $T_c$ spent in computation and communication,
-    respectively, as well as latency and bandwidth\label{enum:b}
+    respectively, as well as latency and bandwidth\label{enum:b},
   \item ratio of runtime and communication times: $r \leq \dfrac{T_a}{T_c}$,\label{enum:c}
   \item degrees of freedom $N$ per process $P$: $\dfrac{N}{P}$,\label{enum:d}
-  \item partitioning imbalance.\label{enum:e}
+  \item and partitioning imbalance.\label{enum:e}
 \end{enumerate}
 
 The partitioning for our test case (see \refsec{sec:pipe}) is considered to be
 topologically equivalent to a cube. The resulting runtime complexities are
-extensively described in \cite{fischer:scaling}. We therefore focus to extract
-information on \ref{enum:b} to \ref{enum:e} from our conducted runs. Our
+extensively described in \cite{fischer:scaling}. We avoid to discussion of
+mapping efficiently complex partitionings on network topologies and focus on
+extracting insight on \ref{enum:b} to \ref{enum:e} from our conducted runs. Our
 profiling tools and wall clock timers allow us to measure the load imbalance,
 cache misses, as well as weak and strong scaling. Load imbalance and cache
 misses are only measured on Mira via the HPM profiling library. 
@@ -659,6 +660,7 @@ many MPI calls.
 \caption{Number of MPI calls and data communicated at $P=4096*32$ on $Re_{\tau}
 550$}
 \begin{tabular}{l||c|c||c|c}
+\hline
 &\multicolumn{2} {c||} {\bf AMG}&\multicolumn{2} {c} {\bf XXT}\\
 \hline
 MPI Routine   &  \#calls  &   avg. bytes  &   \#calls  &   avg. bytes \\ 
@@ -669,6 +671,7 @@ MPI\_Waitall   &  38971   &         0.0   &   56420    &      542.0   \\
 MPI\_Allreduce &  10956   &      5921.0   &    9082    &        0.0   \\     
 \hline
 Total&252312&&136272\\                                                 
+\hline
 \end{tabular}
 \label{tab:xxtamg}
 \end{table}
@@ -713,12 +716,20 @@ NOTE: Finish results analysis and comment on weak scaling when data for 16k and 
 Superlinear scaling occurs on Titan as well as we see in Figure \reffig{fig:scaling_titan} and cache misses is once more assumed to be the reason. On the other hand, the scalability limit for this computer exhibits a different behaviour and the the number of degrees of freedom per core where $r=1$ increases significantly with bigger cases as we see from Table \reffig{tab:stronglimit}. The limit goes from $\frac{n}{P} \sim 9000$ to $\frac{n}{P} \sim 228000$ between the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for XXT. It goes from $\frac{n}{P} \sim 11000$ to $\frac{n}{P} \sim 132000$ between the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for AMG. This result means that despite good strong scaling, weak scaling is not obtained on Titan.
 
 
-\section{Conclusions}
+\section{Conclusion}
 %\end{document}  % This is where a 'short' article might terminate
-We established the strong scaling limit of Nek5000 for the turbulent pipe case
-on three small to large petascale systems. On Mira we can confirm the
-theoratical limits established in \cite{fischer:scaling}, while providing a more
-nuanced picture. 
+Our four test cases from 18million to 2 billion degrees of freedom were
+succesfully run on three different petscale system architectures from the
+lowest, memory bound, processor count to the granularity limit in order to
+assess the strong scaling of Nek5000. On Mira we can confirm the theoratical
+limits established in \cite{fischer:scaling} to match our results in the order
+of magnitude. On the Cray systems we observed one to two orders of magnitude
+lower strong scaling limits due to by an equally order of magnitude higher
+latency and high noise in the network communication. We investigated the new
+and updated projections and observed a much better behavior compared to past
+implementations. Our results point at the regimes under which to chose AMG or
+XXT; AMG for low latency and high element count, XXT for high latency, high
+bandwidth and low element count. 
 
 %ACKNOWLEDGMENTS are optional
 \section{Acknowledgments}
