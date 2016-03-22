@@ -276,22 +276,22 @@ process per CPU core was applied for the smallest system Beskow, a Cray XC40.
 \caption{Overview of the characteristics of the different supercomputers.}
 \begin{tabular}{l|cccccccc} 
 \hline
- & Architecture & \# cores & Cores/node & Processes/core & Topology & Latency
+ & Architecture & \# cores & Cores/node & Processes/core & Topology & Lat.
  $\alpha$ & Inv. bw.  $\beta$ & Inv. flop/s $t_a (\unit[]{\mu s})$\\
  \hline
-Mira & IBM BG/Q & $786,432$ & $16$ &2& 5D torus & $5000$ & $5$ & $10^{-3}$\\ 
-Titan & Cray XK7 & $299,008$ & $16$ &1&3D torus& $???$ & $???$ &\\ % alpha*= 2.2515e-06 s, beta*= 1.4179e-09, t_a= ???, alpha=alpha*/t_a, beta_beta*/t_a
-Beskow & Cray XC40 & $53,632$ & $32$ &1&DragonFly & $???$ & $???$ &\\ % alpha*=2.5486e-06 s, beta*=8.2542e-10 wd/s, t_a= ???, alpha=alpha*/t_a, beta=beta*/t_a
+Mira & IBM BG/Q & $786,432$ & $16$ &2& 5D torus & $5000$ & $5$ & $\sim 10^{-3}$\\ 
+Titan & Cray XK7 & $299,008$ & $16$ &1&3D torus& $3400$ & $2.2$ &$6.5 \cdot 10^{-4}$\\ % alpha*= 2.2515e-06 s, beta*= 1.4179e-09, t_a= 1.5013e-04, alpha=alpha*/t_a, beta_beta*/t_a
+Beskow & Cray XC40 & $53,632$ & $32$ &1&DragonFly & $15000$ & $9.4$ &$1.5 \cdot 10^{-4}$\\ % alpha*=2.5486e-06 s, beta*=8.2542e-10 wd/s, t_a= ???, alpha=alpha*/t_a, beta=beta*/t_a
 \hline
 \end{tabular}
 \label{tab:computer_charac}
 \end{table*}
 
-The values for the non-dimensional latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receives messages of various sizes between different processors. Then the values $\alpha$ and $\beta$ are computed as the best fit for the linear model for interprocessor communication given by
+The values for the non-dimensional latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receive messages of various sizes between different processors is measured. Then the values $\alpha$ and $\beta$ are computed as the best fit for the linear model for interprocessor communication given by
 \begin{equation}
  t_c(m) = (\alpha + \beta m) t_a,
 \end{equation}
-where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. Results for the ping-pong test results are shown in Figure \reffig{fig:pingpong} along with the linear model for Beskow and Titan. The non-dimensional parameters $\alpha$ and $\beta$ are a relative measure of the computational to communication times. Consequently, it is expected that on a computer with high values of those parameters, like Beskow, the scalability limit will occur for a lower number of cores because communication will become a limitation earlier. It does not mean however that such a computer is slower in terms of absolute compute time. For example, we expect Beskow to be faster than Mira and Titan because of its newer and faster CPUs and interconnection network, despite higher values of $\alpha$ and $\beta$.
+where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. The value of $t_a$ is determined by performing a number of matrix-matrix multiplications representing the tensor products that are at the core of a spectral element solver \cite{fischer:hom}. The tensor products considered imply 3D elements with polynomial order ranging from $10$ to $13$. Three different interpretations of the memory layout for the matrices are considered leading to a total of $12$ tests. For each test, the time and number of operations are measured and flop rate is computed. Data are then averaged and $t_a$ is taken as the inverse of the mean flop rate. Results for the ping-pong test are shown in \reffig{fig:pingpong} along with the linear model for Beskow and Titan. The non-dimensional parameters $\alpha$ and $\beta$ are a relative measure of the computational to communication times. Consequently, it is expected that on a computer with high values of those parameters, like Beskow, the scalability limit will occur for a lower number of cores because communication will become a limitation earlier. It does not mean however that such a computer is slower in terms of absolute compute time. %For example, we expect Beskow to be faster than Mira and Titan because of its newer and faster CPUs and interconnection network, despite higher values of $\alpha$ and $\beta$.
 
 \begin{figure}
   \centering
@@ -388,6 +388,37 @@ The geometry is meshed using hexahedral elements, partioned for parallel computa
 \label{sec:code}
 
 The main loop iterates over the time steps. At each time step, the pressure is solved first and then the velocity components. Furthermore, each of those fields is projected before and after being solved. The pressure is solved with the GMRES method while conjugate gradient is used for the velocity. The pressure solve also includes the computation of the preconditioner based on the Schwarz overlapping method and coarse grid solve, which is not the case for the velocity and constitutes an important part of the work and communication.
+\begin{algorithm}
+\caption{Structure of Nek5000 using the PNPN method.}\label{alg:code_struct}
+\begin{algorithmic}
+\Procedure{Solver}{}
+\For {k=1,...,nsteps}
+\State $r_p \leftarrow \text{proj}_{X_{r_p}}(r_p)$
+\State $p \leftarrow \text{Helmoltz}(H,r_p)$
+\State $p \leftarrow \text{proj}_{X_p}(p)$
+\State $r_u \leftarrow \text{proj}_{X_{r_u}}(r_u)$
+\State $u \leftarrow \text{Helmoltz}(H,r_u)$
+\State $u \leftarrow \text{proj}_{X_u}(u)$
+\EndFor
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Helmholtz solve.}\label{alg:code_struct}
+\begin{algorithmic}
+\Procedure{Helmholtz}{$H, r$}
+\If {Velocity}
+\State $x \leftarrow CG(H, r)$
+\ElsIf {Pressure}
+\State $\left(M_0^{-1}\right)_{\text{Sch}} \leftarrow$ overlapping Schwarz
+\State $\left(M_0^{-1}\right)_{\text{cgs}} \leftarrow$ coarse grid solve
+\State $M_0^{-1} \leftarrow \left(M_0^{-1}\right)_{\text{Sch}} + \left(M_0^{-1}\right)_{\text{cgs}}$
+\State $x \leftarrow GMRES(M_0^{-1}, H, r)$
+\EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 \subsubsection{Instrumentation for the Timers}
 \label{sec:timers}
@@ -708,12 +739,12 @@ on the ratio $\frac{n}{P}$.
 
 % Beskow
 
-On Beskow, superlinear scaling is also visible over a large range of cores in Figure \reffig{fig:scaling_beskow}. This shows once again the good strong scaling of Nek5000. We do not possess profiling results for Beskow and cannot study the cache misses but we assume that the reason for superlinearity is similar as for Mira. The scalability limit $r=1$ is more delicate to locate accurately because of the high variance in communication times (see Figure \reffig{fig:pingpong_beskow}). We nevertheless present the scalability limit for the particular results from Figure \reffig{fig:scaling_beskow} while keeping in mind that the intersection point would probably move significantly if the test had to be run again, depending on the nodes allocation, network traffic on the computer... However, we note that the scalability limit on Beskow is roughly one order of magnitude higher as on Mira in terms of degrees of freedom per core and $r=1$ is obtained at about $\frac{n}{P} \sim 20000 - 50000$. This is consistent with the values for the non-dimensional latency and inverse bandwidth from Table \reffig{tab:computer_charac} and the fact that Beskow has faster CPUs.
+On Beskow, superlinear scaling is also visible over a large range of cores in \reffig{fig:scaling_beskow}. This shows once again the good strong scaling of Nek5000. We do not possess profiling results for Beskow and cannot study the cache misses but we assume that the reason for superlinearity is similar as for Mira. The scalability limit $r=1$ is more delicate to locate accurately because of the high variance in communication times (see \reffig{fig:pingpong_beskow}). We nevertheless present the scalability limit for the particular results from \reffig{fig:scaling_beskow} while keeping in mind that the intersection point would probably move significantly if the test had to be run again, depending on the nodes allocation, network traffic on the computer... However, we note that the scalability limit on Beskow is roughly one order of magnitude higher as on Mira in terms of degrees of freedom per core and $r=1$ is obtained at about $\frac{n}{P} \sim 20000 - 50000$. This is consistent with the values for the non-dimensional latency and inverse bandwidth from Table \reffig{tab:computer_charac} and the fact that Beskow has faster CPUs.
 NOTE: Finish results analysis and comment on weak scaling when data for 16k and 32k available.
 
 % Titan
 
-Superlinear scaling occurs on Titan as well as we see in Figure \reffig{fig:scaling_titan} and cache misses is once more assumed to be the reason. On the other hand, the scalability limit for this computer exhibits a different behaviour and the the number of degrees of freedom per core where $r=1$ increases significantly with bigger cases as we see from Table \reffig{tab:stronglimit}. The limit goes from $\frac{n}{P} \sim 9000$ to $\frac{n}{P} \sim 228000$ between the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for XXT. It goes from $\frac{n}{P} \sim 11000$ to $\frac{n}{P} \sim 132000$ between the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for AMG. This result means that despite good strong scaling, weak scaling is not obtained on Titan.
+Superlinear scaling occurs on Titan as well as we see in \reffig{fig:scaling_titan} and cache misses is once more assumed to be the reason. On the other hand, the scalability limit for this computer exhibits a different behaviour and the the number of degrees of freedom per core where $r=1$ increases significantly with bigger cases as we see from Table \reffig{tab:stronglimit}. The limit goes from $\frac{n}{P} \sim 9000$ to $\frac{n}{P} \sim 228000$ between the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for XXT. It goes from $\frac{n}{P} \sim 11000$ to $\frac{n}{P} \sim 132000$ between the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for AMG. This result means that despite good strong scaling, weak scaling is not obtained on Titan.
 
 
 \section{Conclusion}
