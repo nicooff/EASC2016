@@ -56,6 +56,7 @@
 \documentclass{sig-alternate}
 
 \usepackage{subfigure}
+\usepackage{enumitem}
 
 \begin{document}
 
@@ -420,53 +421,34 @@ imbalance. The CrayPat performance analysis framework is used to sample the code
 % Mention and discuss PN-PN
 % Discuss the two coarse grid solver XXT and AMG
 
-\section{Prior Work}
-Link to the complexities in the Fischer paper -> multiplicities
-Explain finite difference link
-
 \section{Performance and Scaling Analysis}
 \label{sec:analysis}
-Notes: c32
-Large scale runtime performance is influenced by 
+We assume that large scale runtime performance is influenced by 
 \begin{enumerate}
-  \item Network topology
+  \item Network topology \label{enum:a}
   \item Time $T_a$ and $T_c$ spent in computation and communication,
-    %respectively
-  \item ratio of runtime and communication times: $r \leq \dfrac{T_a}{T_c}$,
-  \item degrees of freedom $N$ per process $P$: $\dfrac{N}{P}$,
-  \item partitioning imbalance.
+    respectively, as well as latency and bandwidth\label{enum:b}
+  \item ratio of runtime and communication times: $r \leq \dfrac{T_a}{T_c}$,\label{enum:c}
+  \item degrees of freedom $N$ per process $P$: $\dfrac{N}{P}$,\label{enum:d}
+  \item partitioning imbalance.\label{enum:e}
 \end{enumerate}
 
-We will measure the load imbalance, cache misses, multiplicities of grid points
-across as well as weak and strong scaling.
+The partitioning for our test case (see \refsec{sec:pipe}) is considered to be
+topologically equivalent to a cube. The resulting runtime complexities are
+extensively described in \cite{fischer:scaling}. We therefore focus to extract
+information on \ref{enum:b} to \ref{enum:e} from our conducted runs. Our
+profiling tools and wall clock timers allow us to measure the load imbalance,
+cache misses, as well as weak and strong scaling. Load imbalance and cache
+misses are only measured on Mira via the HPM profiling library. 
 While relying on the results of \cite{tufo:terascale}, we want in particular to verify
 experimentally the strong scaling limit which is defined as the ratio of $\dfrac{N}{P}$ where
-$\dfrac{T_a}{T_c}\leq 1$ inequality is equal to $1$ with increasing $P$. The
-abstraction of communication and computation time does not take into account
-factors as load imbalance, cache misses or accelerated collective communications.
-
-The communication is subdivided into nearest neighbour (NN) and so called
-allreductions. As the NN hints, the communication takes place between a spatial
-partition and all of its neighbours. In a 3D cube with cubic partitioning this
-would be 8 for the vertices, 4 for the edges and 2 for the faces. We assume that
-all NN on mesh are also nearest neighbours on the partitioning mapped to the
-physical topology of the hardware. We will prove in \refsec{sec:abstractions}
-that our use case presented in the next section is equivalent to a cubic
-partitioning and rely on the complexities of \cite{fischer:scaling} for $T_c$ and
-$T_a$. The performance of allreduce is a core indicator of a system's
-performance and is dependent on its network hardware. The most prevalent
-complexities for allreductions are given by $\bigo{\dfrac{n}{P}\cdot \log(P)}$. All
-systems used in this paper rely on accelerated allreduce MPI communication that have
-a complexity of $\bigo{n}$, independently of $P$. Beskow uses the dragonfly
-topology where accelerated collectives are being presented in
-\cite{jain2012collectives}. Titan and Mira use a 3D and 5D torus, getting the
-reduction cost down to $\alpha \cdot c \cdot n$ where $c$ is a low constant
-value. In the end, the collective communication is the dominant and
-differentiating factor in the scaling behavior of Nek on those three systems.
-
+$\dfrac{T_a}{T_c}\leq 1$ inequality is equal to $1$ with increasing $P$. 
 A generic case, widely known across the CFD community, is used to explore the
 scaling behavior of Nek. This should allow potential users to estimate and
 compare the scaling of Nek to other CFD software.
+Our test case is run in four different regimes at 4 different problem sizes called
+$Re_{\tau} 180, Re_{\tau} 360, Re_{\tau} 550, Re_{\tau} 1000$ described more in
+detail in the next section.
 \subsection{Test Case: Pipe}
 \label{sec:pipe}
 
@@ -681,7 +663,6 @@ MPI Routine   &  \#calls  &   avg. bytes  &   \#calls  &   avg. bytes \\
 MPI\_Isend     &  96638   &       360.5   &  62336     &    6363.8    \\     
 MPI\_Irecv     &  96638   &       362.7   &    5916    &    61885.4   \\   
 MPI\_Waitall   &  38971   &         0.0   &   56420    &      542.0   \\     
-MPI\_Barrier   &  9109    &        0.0    &   2518     &       0.0    \\    
 MPI\_Allreduce &  10956   &      5921.0   &    9082    &        0.0   \\     
 \hline
 Total&252312&&136272\\                                                 
