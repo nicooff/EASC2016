@@ -588,8 +588,6 @@ scaling diverges significantly from the perfect linear scaling. For both XXT and
 AMG this point is clearly determined in the plots where the computation time
 crosses the communication time. 
 
-The approximations of values for $\frac{n}{P}$ where
-$r=1$ are listed in \reftab{tab:stronglimit}.
 \begin{table}  
   \caption{Strong Scaling Limit for all 4 test cases on Beskow, Titan and Mira
   in degrees of freedom per core $\frac{n}{P}$ with 2 processes per core on Mira, 1 process per core on Beskow and Titan}
@@ -620,11 +618,9 @@ $r=1$ are listed in \reftab{tab:stronglimit}.
   \end{tabular}
   \label{tab:stronglimit}
 \end{table}
-
-linear interpolation
-
-On Mira this limit has consistently in all 4 cases (see
-\reffig{fig:scaling_mira}). In practice we observed a strong scaling limit $r=1$ for XXT at roughly $1900<
+The approximations of values for $\frac{n}{P}$ where
+$r=1$ were determined using linear intepolation (see \reftab{tab:stronglimit}).
+ In practice we observed a strong scaling limit $r=1$ for XXT at roughly $1900<
 \frac{n}{P} < 2300$ and for AMG at $2300<\frac{n}{P}<4000$, below the $7000$
 anticipated in \cite{fischer:scaling}. 
 
@@ -660,6 +656,38 @@ is the only run that was performed at a process count that is not to the power
 of two.
 In summary, we attribute the super linear scaling to cache
 management and pipelining on the CPU of Mira. 
+
+Comparing XXT and AMG we have a very clear picture on Mira. For smaller element
+numbers XXT ($Re_{\tau} 180$) performs best and from 200k elements onwards
+($Re_{\tau})$) AMG takes the lead. Although AMG has a much lower strong
+scaling limit, it outperforms XXT in time to solution (e.g. $Re_{\tau}
+550$). For the Crays, the result is much more ambiguous. The difference between
+XXT and AMG is marginal on Titan and more pronounced on Beskow. However, we can
+claim that using AMG on these machines is never detrimental with regard to time
+to solution. However, taking all the Machines into account, we see that AMG
+general leaps ahead if the systems rely on a low latency network combined with a
+high element count. In \reftab{tab:xxtamg} we compare XXT and AMG on $Re_{\tau}
+550$ at the strong scaling limit of AMG (4096 nodes). The amount of data
+communicated by XXT is by an order of magnitude higher, while AMG uses twice as
+many MPI calls. 
+\begin{table}
+\caption{Number of MPI calls and data communicated at $P=4096*32$ on $Re_{\tau}
+550$}
+\begin{tabular}{l||c|c||c|c}
+&\multicolumn{2} {c||} {\bf AMG}&\multicolumn{2} {c} {\bf XXT}\\
+\hline
+MPI Routine   &  \#calls  &   avg. bytes  &   \#calls  &   avg. bytes \\ 
+\hline
+MPI\_Isend     &  96638   &       360.5   &  62336     &    6363.8    \\     
+MPI\_Irecv     &  96638   &       362.7   &    5916    &    61885.4   \\   
+MPI\_Waitall   &  38971   &         0.0   &   56420    &      542.0   \\     
+MPI\_Barrier   &  9109    &        0.0    &   2518     &       0.0    \\    
+MPI\_Allreduce &  10956   &      5921.0   &    9082    &        0.0   \\     
+\hline
+Total&252312&&136272\\                                                 
+\end{tabular}
+\label{tab:xxtamg}
+\end{table}
 
 Beyond the strong scaling limit, the computation time increases again and
 approaches the linear scaling line again. This is attributed to the load
