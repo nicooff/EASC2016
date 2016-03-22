@@ -330,7 +330,7 @@ There are two main solvers available within Nek5000 for computing the solution o
 \end{align}
 where $\mathbf{u}$ is the velocity field and $p$ the pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations \refeqn{eqn:NS_momentum}  and \refeqn{eqn:NS_continuity} are called the continuity and momentum equations respectively. 
 
-The momentum equation is time integrated via an Implicit-Explicit scheme, also known as BDFk-EXTk (Backward DiFferences and EXTrapolation of order k). We illustrate it semidiscretely, following \cite{Tomboulides1997}
+The momentum equation is time integrated via an Implicit-Explicit scheme, also known as BDFk-EXTk (Backward DiFferences and EXTrapolation of order k). We illustrate it semidiscretely
 
 \begin{eqnarray}
 \sum\limits_{j=0}^k \frac{b_j}{\Delta t} \mathbf u^{n-j}  = - \nabla p^{n}+\frac{1}{Re}\nabla^2\mathbf u^{n}+\underbrace{\sum\limits_{j=1}^k a_j [N(\mathbf u^{n-j})+\mathbf f^{n}]}_{\mathbf{F}_n(\mathbf u,\mathbf f)}\label{eqn:discrete}
@@ -344,13 +344,15 @@ Ignoring boundary conditions and other numerical technicalities available in \ci
 \end{align}
 
 So as it can be observed solving the incompressible Navier-Stokes equations is reduced to the evaluation of $\mathbf{F}_n$ in \refeqn{eqn:discrete}, followed by one Poisson equation and a Helmholtz equation thereafter. 
-Equation \refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main source of stiffness and its efficient resolution by an iterative solver is preceded by two steps. First of all, the pressure at each time iteration is projected onto a subspace of previous solutions and serves as first guess for the iterative solver. We used a subspace of length $20$ in the present case. This method, described in \cite{Fischer1998}, has been shown to reduce the iteration count by a factor $2.5-5$. Then, A pressure preconditioner is built based on the additive overlapping Schwarz method and a coarse grid solve. It is given by 
+Equation \refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main source of stiffness and its efficient resolution by an iterative solver is preceded by two steps. First of all, the pressure at each time iteration is projected onto a subspace of previous solutions and serves as first guess for the iterative solver. We used a subspace of length $20$ in the present case. This method, described in \cite{Fischer1998}, has been shown to reduce the iteration count by a factor $2.5-5$. Then, a pressure preconditioner is built based on the additive overlapping Schwarz method, given by 
 \begin{equation}
  M_0^{-1} := R_0^T A_{0}^{-1} R_0 + \sum_{k=1}^{K} R_k^T \tilde{A}_k^{-1} R_k.
 \end{equation}
-The overlapping part require local solves on each subdomain and is easily parallelized \cite{Fischer199784,Fischer2005}. The coarse grid solve is more difficult to parallelize and can be performed in two different ways. The first method is XXT \cite{Tufo2001151}, where the solution on the coarse grid is projected on a basis that constitutes a quasi-sparse factorization of $A_0^{-1}$. The second method is an algebraic multigrid solver (AMG) that operates a smoothing, a coarsening and a interpolation operation on a predefined number of coarse grid levels. Finally, the pressure equatin is solved with the generalized minimal residual method (GMRES).
+The overlapping part require local solves on each subdomain and is easily parallelized \cite{Fischer199784,Fischer2005}. The coarse grid solve is more difficult to parallelize and can be performed in two different ways. The first method is a Cholesky factorization of the matrix $A_0^{-1}$ into $XX^T$ with a convenient refactoring of the underlying matrix to maximize the sparsity pattern of $X^T$. This factorization is subsequently referred to as XXT and details regarding complexity and implementation are available in \cite{Tufo2001151}. 
 
-In a similar way, Equation \refeqn{eqn:hmhz_vel}, the Poisson equation for the velocity, is solved using the conjugate gradient (CG) iterative solver but without the need for a Schwarz method or a coarse grid solve.
+The second method is an algebraic multigrid solver (AMG) that operates a smoothing, a coarsening and a interpolation operation on a predefined number of coarse grid levels. Finally, the pressure equation is solved with the generalized minimal residual method (GMRES).
+
+In a similar way, Equation \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the velocity, is solved using the conjugate gradient (CG) iterative solver with a simple Jacobi preconditioner.
 % \begin{align}
 %  \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
 %  \mathbf{h}_i^n & = N(\mathbf{u}_i^n) + B \mathbf{f}_i + ???, \label{eqn:rhs}\\
@@ -382,7 +384,6 @@ The geometry is meshed using hexahedral elements, partioned for parallel computa
   \label{fig:partition}
 \end{figure}
  
-I should have next to the partition figure the flow at same angle and size, possible Nicolas? 
 \subsubsection{Code structure}
 \label{sec:code}
 
@@ -616,9 +617,8 @@ algorithms in Nek5000 should yield little overhead due to the halo update.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/cachelines.png}
-  \caption{Cache Misses}
-  \label{fig:cachemisses}
   \caption{Cache misses on Mira for all 4 test cases(low to high degrees of freedom in direction of the arrow) The dashed red line: L1 cache size}
+   \label{fig:cachemisses}
 \end{figure}
 
 All test cases on all the systems show a super linear scaling. This
@@ -684,7 +684,7 @@ workload as well as the resulting imbalance in the communication.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/histogram.png}
-  \caption{Histogram of the load imbalance at $2.184\times10^9$ degrees of freedom: number of processes per time spent in communication. Red bins: .., blue bins:...}
+  \caption{Histogram of the load imbalance at $2.184\times10^9$ degrees of freedom: number of processes per time spent in communication. Red bins:\% of processes at the lowest per core load, blue bins:\% of processes at highest per core load}
   \label{fig:imbalancehist}
 \end{figure}
 
