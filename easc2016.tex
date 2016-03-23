@@ -255,73 +255,7 @@ The development of highly scalable codes that perform well on different architec
 
 Nek5000 is a spectral element, thermal hydraulics code which performs best on complex geometries, wall bounded problems (although it can handle any type of boundary condition), at large scales on any commonly used parallel computer architecture. The present study is aimed at providing users a handle on parameter choices for performance and scalability, and relies on previous work , such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark the code on a canonical flow case, a Direct Numerical Simulation case of incompressible flow in pipe at increasingly high Reynolds numbers \cite{Khoury2013}. As commonly known solving the Poisson equation for the pressure is the most challenging computationally part of a incompressible flow solver. Nek5000 relies on a domain decomposition approach to solving the Poisson subproblem, where the coarse grid solver is precondioned either via XXT \cite{Tufo2001151} or AMG (ref report James). We explore both approaches and quantify the regimes in which either of them is recommendable... (to be finished after we analyzed the data).
 
-\subsection{Hardware}
-
-The test cases were run on three different supercomputers, namely Mira from the
-Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory,
-USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden.
-A quick overview of the characteristics of each computer is summarized in 
-\reftab{tab:computer_charac}. The systems vary from small to large petascale and are meant to establish an overview of the Nek5000 scaling. On Mira, Nek5000 achieves its
-peak performance when run with two processes per BG/Q core, being 32 processes
-per node which was noted already in \cite{fischer:scaling}. Although Titan is a machine aimed at hybrid parallelism using graphics procssing units (GPUs), which Nek5000 supports marginally as mentioned in \cite{Otten2016}, no production runs were performed outside the MPI environment and we shall restrict the use of Titan to cpu parallelism and rely solely
-on the 16 Opteron cores per node with one process each. The same setup of 1
-process per CPU core was applied for the smallest system Beskow, a Cray XC40.
-
-% Add other fields to the table?
-% Put latency and bandwidth in another table?
-\begin{table*}
-\centering
-\caption{Overview of the characteristics of the different supercomputers.}
-\begin{tabular}{l|cccccccc} 
-\hline
- & Architecture & \# cores & Cores/node & Processes/core & Topology & Lat.
- $\alpha$ & Inv. bw.  $\beta$ & Inv. flop/s $t_a (\unit[]{\mu s})$\\
- \hline
-Mira & IBM BG/Q & $786,432$ & $16$ &2& 5D torus & $5000$ & $5$ & $\sim 10^{-3}$\\ 
-Titan & Cray XK7 & $299,008$ & $16$ &1&3D torus& $3400$ & $2.2$ &$6.5 \cdot 10^{-4}$\\ % alpha*= 2.2515e-06 s, beta*= 1.4179e-09, t_a= 1.5013e-04, alpha=alpha*/t_a, beta_beta*/t_a
-Beskow & Cray XC40 & $53,632$ & $32$ &1&DragonFly & $15000$ & $9.4$ &$1.5 \cdot 10^{-4}$\\ % alpha*=2.5486e-06 s, beta*=8.2542e-10 wd/s, t_a= ???, alpha=alpha*/t_a, beta=beta*/t_a
-\hline
-\end{tabular}
-\label{tab:computer_charac}
-\end{table*}
-
-In order to assess the perfomance of the machines we have used we needed to compute some of the network characteristics that determine the communication. In particular Beskow which is relatively new machine had no such parameters provided to users. 
-The performance study conducted here relies on the linear interprocessor communication  model
-\begin{equation}
- t_c(m) = (\alpha + \beta m) t_a,\label{eqn:lincomm}
-\end{equation}
-where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. The relevant quantities here are $\alpha$, the non-dimensional latency and $beta$ the inverse bandwidth, both computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receive messages of various sizes between different processors is measured and subsequently the values of $\alpha$ and $\beta$ are computed as the best fit for the linear model \ref{eqn:lincomm}.
-
-The value of $t_a$ is determined by performing a number of matrix-matrix multiplications representing the tensor products that are at the core of a spectral element solver \cite{fischer:hom}. The tensor products considered imply 3D elements with polynomial order ranging from $10$ to $13$. Three different interpretations of the memory layout for the matrices are considered leading to a total of $12$ tests. For each test, the time and number of operations are measured and flop rate is computed. Data are then averaged and $t_a$ is taken as the inverse of the mean flop rate. Results for the ping-pong test are shown in \reffig{fig:pingpong} along with the linear model for Beskow and Titan. The non-dimensional parameters $\alpha$ and $\beta$ are a relative measure of the computational to communication times. Consequently, it is expected that on a computer with high values of those parameters, like Beskow, the scalability limit will occur for a lower number of cores because communication will become a limitation earlier. It does not mean however that such a computer is slower in terms of absolute compute time. %For example, we expect Beskow to be faster than Mira and Titan because of its newer and faster CPUs and interconnection network, despite higher values of $\alpha$ and $\beta$.
-
-\begin{figure}
-  \centering
-  \subfigure[Ping-pong on Beskow]{
-  \includegraphics[width=\linewidth]{./figures/pingpong_beskow.png}
-  \label{fig:pingpong_beskow}
-  }
-  \subfigure[Ping-pong on Titan]{
-  \includegraphics[width=\linewidth]{./figures/pingpong_titan.png}
-  \label{fig:pingpong_titan}
-  }
-  \subfigure[Ping-pong and all-reduce on Mira as illustrated in \cite{fischer:scaling}]{
-  \includegraphics[width=\linewidth]{./figures/pingpong_mira.png}
-  \label{fig:pingpong_mira}
-  }
-  \caption{Latency and Bandwidth Tests on Mira}
-  \label{fig:pingpong}
-\end{figure}
-
-% Show graph with results of the ping pong test?
-% Explain that we took minimum values
-% Discuss noise and "randomness" of the results on Cray machines
-
-
-
-\section{Nek5000 solver}
-
-\subsection{Method}
-projections
+\section{Code description}
 
 \subsubsection{Splitting method}
 There are two main solvers available within Nek5000 for computing the solution of incompressible Navier-Stokes, and of these one is also ammenable to non-divergence free flows, as available in \cite{Tomboulides1997}. Although we operate in the incompressible regime we picked this solver to preserve generality. The incompressible Navier-Stokes given here
@@ -440,14 +374,77 @@ $H_p$ and $H_{\mathbf{u}}$ are the Helmholtz operators for pressure and velocity
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Instrumentation for the Timers}
-\label{sec:timers}
+\section{Benchmarking}
+\label{sec:benchmarking}
+
+\subsection{Hardware}
+
+The test cases were run on three different supercomputers, namely Mira from the
+Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory,
+USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden.
+A quick overview of the characteristics of each computer is summarized in 
+\reftab{tab:computer_charac}. The systems vary from small to large petascale and are meant to establish an overview of the Nek5000 scaling. On Mira, Nek5000 achieves its
+peak performance when run with two processes per BG/Q core, being 32 processes
+per node which was noted already in \cite{fischer:scaling}. Although Titan is a machine aimed at hybrid parallelism using graphics procssing units (GPUs), which Nek5000 supports marginally as mentioned in \cite{Otten2016}, no production runs were performed outside the MPI environment and we shall restrict the use of Titan to cpu parallelism and rely solely
+on the 16 Opteron cores per node with one process each. The same setup of 1
+process per CPU core was applied for the smallest system Beskow, a Cray XC40.
+
+% Add other fields to the table?
+% Put latency and bandwidth in another table?
+\begin{table*}
+\centering
+\caption{Overview of the characteristics of the different supercomputers.}
+\begin{tabular}{l|cccccccc} 
+\hline
+ & Architecture & \# cores & Cores/node & Processes/core & Topology & Lat.
+ $\alpha$ & Inv. bw.  $\beta$ & Inv. flop/s $t_a (\unit[]{\mu s})$\\
+ \hline
+Mira & IBM BG/Q & $786,432$ & $16$ &2& 5D torus & $5000$ & $5$ & $\sim 10^{-3}$\\ 
+Titan & Cray XK7 & $299,008$ & $16$ &1&3D torus& $3400$ & $2.2$ &$6.5 \cdot 10^{-4}$\\ % alpha*= 2.2515e-06 s, beta*= 1.4179e-09, t_a= 1.5013e-04, alpha=alpha*/t_a, beta_beta*/t_a
+Beskow & Cray XC40 & $53,632$ & $32$ &1&DragonFly & $15000$ & $9.4$ &$1.5 \cdot 10^{-4}$\\ % alpha*=2.5486e-06 s, beta*=8.2542e-10 wd/s, t_a= ???, alpha=alpha*/t_a, beta=beta*/t_a
+\hline
+\end{tabular}
+\label{tab:computer_charac}
+\end{table*}
+
+In order to assess the perfomance of the machines we have used we needed to compute some of the network characteristics that determine the communication. In particular Beskow which is relatively new machine had no such parameters provided to users. 
+The performance study conducted here relies on the linear interprocessor communication  model
+\begin{equation}
+ t_c(m) = (\alpha + \beta m) t_a,\label{eqn:lincomm}
+\end{equation}
+where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. The relevant quantities here are $\alpha$, the non-dimensional latency and $beta$ the inverse bandwidth, both computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receive messages of various sizes between different processors is measured and subsequently the values of $\alpha$ and $\beta$ are computed as the best fit for the linear model \ref{eqn:lincomm}.
+
+The value of $t_a$ is determined by performing a number of matrix-matrix multiplications representing the tensor products that are at the core of a spectral element solver \cite{fischer:hom}. The tensor products considered imply 3D elements with polynomial order ranging from $10$ to $13$. Three different interpretations of the memory layout for the matrices are considered leading to a total of $12$ tests. For each test, the time and number of operations are measured and flop rate is computed. Data are then averaged and $t_a$ is taken as the inverse of the mean flop rate. Results for the ping-pong test are shown in \reffig{fig:pingpong} along with the linear model for Beskow and Titan. The non-dimensional parameters $\alpha$ and $\beta$ are a relative measure of the computational to communication times. Consequently, it is expected that on a computer with high values of those parameters, like Beskow, the scalability limit will occur for a lower number of cores because communication will become a limitation earlier. It does not mean however that such a computer is slower in terms of absolute compute time. %For example, we expect Beskow to be faster than Mira and Titan because of its newer and faster CPUs and interconnection network, despite higher values of $\alpha$ and $\beta$.
+
+\begin{figure}
+  \centering
+  \subfigure[Ping-pong on Beskow]{
+  \includegraphics[width=\linewidth]{./figures/pingpong_beskow.png}
+  \label{fig:pingpong_beskow}
+  }
+  \subfigure[Ping-pong on Titan]{
+  \includegraphics[width=\linewidth]{./figures/pingpong_titan.png}
+  \label{fig:pingpong_titan}
+  }
+  \subfigure[Ping-pong and all-reduce on Mira as illustrated in \cite{fischer:scaling}]{
+  \includegraphics[width=\linewidth]{./figures/pingpong_mira.png}
+  \label{fig:pingpong_mira}
+  }
+  \caption{Latency and Bandwidth Tests on Mira}
+  \label{fig:pingpong}
+\end{figure}
+
+% Show graph with results of the ping pong test?
+% Explain that we took minimum values
+% Discuss noise and "randomness" of the results on Cray machines
+\subsection{Code instrumentation for profiling}
 Our strategy for timing the code execution is twofold. For one, we use MPI
 timers for the wall clock time and profiling libraries that were deemed suitable
 for our use case. We are running the code on our test case (see
 \refsec{sec:pipe}) after a full restart for 50 time steps. We save 5 past
 projections and are measuring the time from the 30th to the 50th time step; in
-total 20 time steps. 
+total 20 time steps.
+ 
 \paragraph{MPI Timers}
 Based on the structure presented in \refsec{sec:code} we placed 10 timers in the code that are
 only switched on during the last 20 time steps. Each timer measures the wall
@@ -462,6 +459,34 @@ Beskow and Titan and on Hardware Performance Monitor (HPM) for Mira. Both tools
 allow us to measure the total time spent in communication during the targeted 20 time
 steps. In addition HPM gives additional information on the cache misses and the load
 imbalance. The CrayPat performance analysis framework is used to sample the code during execution at a default frequency of $\unit[100]{Hz}$ and reports in which function each sample was taken. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. The sampling procedure ensures a very low overhead. We also tested the profiling procedure, where all function calls are tracked, available with Craypat but overhead in time was about $50\%$ and the method was abandoned.
+\subsection{Test Case: Pipe}
+\label{sec:pipe}
+
+The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \reftab{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. A snapshot of the velocity magnitude for the case $Re_{\tau} = 180$ is illustrated in \reffig{fig:flow_vis}.
+
+\begin{table}
+\centering
+\caption{Summary of the different pipe flows configurations.}
+\begin{tabular}{llrr} 
+\hline
+$Re_{\tau}$&$Re_{b}$&\# of elements & \# of grid points\\ 
+\hline
+$180$ & $5300$ & $36,480$ & $18.67 \times 10^6$\\
+$360$ & $11,700$ & $237,120$ & $121.4 \times 10^6$\\ 
+$550$ & $19,000$ & $823,632$ & $437.0 \times 10^6$\\ 
+$1000$ & $37,700$ & $1,264,032$ & $2.184 \times 10^9$\\
+\hline
+\end{tabular}
+\label{tab:pipe_conf}
+\end{table}
+%\subsection{Abstractions and Assumptions}
+%\label{sec:abstractions}
+%\subsubsection{$\alpha$, $\beta$}
+%\subsubsection{Imbalance}
+%\subsubsection{Weak/Strong Scaling, Efficiency}
+%\subsubsection{Cache Misses and Scaling}
+%\subsubsection{Partitioning and Imbalance}
+
 
 %\subsection{Models for parallel performance}
 
@@ -505,34 +530,6 @@ compare the scaling of Nek to other CFD software.
 Our test case is run in four different regimes at 4 different problem sizes called
 $Re_{\tau} 180, Re_{\tau} 360, Re_{\tau} 550, Re_{\tau} 1000$ described more in
 detail in the next section.
-\subsection{Test Case: Pipe}
-\label{sec:pipe}
-
-The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \reftab{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. A snapshot of the velocity magnitude for the case $Re_{\tau} = 180$ is illustrated in \reffig{fig:flow_vis}.
-
-\begin{table}
-\centering
-\caption{Summary of the different pipe flows configurations.}
-\begin{tabular}{llrr} 
-\hline
-$Re_{\tau}$&$Re_{b}$&\# of elements & \# of grid points\\ 
-\hline
-$180$ & $5300$ & $36,480$ & $18.67 \times 10^6$\\
-$360$ & $11,700$ & $237,120$ & $121.4 \times 10^6$\\ 
-$550$ & $19,000$ & $823,632$ & $437.0 \times 10^6$\\ 
-$1000$ & $37,700$ & $1,264,032$ & $2.184 \times 10^9$\\
-\hline
-\end{tabular}
-\label{tab:pipe_conf}
-\end{table}
-%\subsection{Abstractions and Assumptions}
-%\label{sec:abstractions}
-%\subsubsection{$\alpha$, $\beta$}
-%\subsubsection{Imbalance}
-%\subsubsection{Weak/Strong Scaling, Efficiency}
-%\subsubsection{Cache Misses and Scaling}
-%\subsubsection{Partitioning and Imbalance}
-
 
 \section{Results}
 
