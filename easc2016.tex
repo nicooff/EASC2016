@@ -260,11 +260,9 @@ The test cases were run on three different supercomputers, namely Mira from the
 Argonne National Laboratory, USA, Titan from the Oak Ridge National Laboratory,
 USA, and Beskow from the PDC Center for High Performance Computing, KTH, Sweden.
 A quick overview of the characteristics of each computer is summarized in 
-\reftab{tab:computer_charac}. The systems vary from small to large petascale and help to
-establish an overview of the Nek5000 scaling. On Mira, Nek5000 achieves its
+\reftab{tab:computer_charac}. The systems vary from small to large petascale and are meant to establish an overview of the Nek5000 scaling. On Mira, Nek5000 achieves its
 peak performance when run with two processes per BG/Q core, being 32 processes
-per node. The GPUs on Titan can
-currently not be exploited using Nek5000. Thus we relied on that system solely
+per node which was noted already in \cite{fischer:scaling}. Although Titan is a machine aimed at hybrid parallelism using graphics procssing units (GPUs), which Nek5000 supports marginally as mentioned in \cite{Otten2016}, no production runs were performed outside the MPI environment and we shall restrict the use of Titan to cpu parallelism and rely solely
 on the 16 Opteron cores per node with one process each. The same setup of 1
 process per CPU core was applied for the smallest system Beskow, a Cray XC40.
 
@@ -286,11 +284,14 @@ Beskow & Cray XC40 & $53,632$ & $32$ &1&DragonFly & $15000$ & $9.4$ &$1.5 \cdot 
 \label{tab:computer_charac}
 \end{table*}
 
-The values for the non-dimensional latency $\alpha$ and the inverse bandwidth $\beta$ have been computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receive messages of various sizes between different processors is measured. Then the values $\alpha$ and $\beta$ are computed as the best fit for the linear model for interprocessor communication given by
+In order to assess the perfomance of the machines we have used we needed to compute some of the network characteristics that determine the communication. In particular Beskow which is relatively new machine had no such parameters provided to users. 
+The performance study conducted here relies on the linear interprocessor communication  model
 \begin{equation}
- t_c(m) = (\alpha + \beta m) t_a,
+ t_c(m) = (\alpha + \beta m) t_a,\label{eqn:lincomm}
 \end{equation}
-where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. The value of $t_a$ is determined by performing a number of matrix-matrix multiplications representing the tensor products that are at the core of a spectral element solver \cite{fischer:hom}. The tensor products considered imply 3D elements with polynomial order ranging from $10$ to $13$. Three different interpretations of the memory layout for the matrices are considered leading to a total of $12$ tests. For each test, the time and number of operations are measured and flop rate is computed. Data are then averaged and $t_a$ is taken as the inverse of the mean flop rate. Results for the ping-pong test are shown in \reffig{fig:pingpong} along with the linear model for Beskow and Titan. The non-dimensional parameters $\alpha$ and $\beta$ are a relative measure of the computational to communication times. Consequently, it is expected that on a computer with high values of those parameters, like Beskow, the scalability limit will occur for a lower number of cores because communication will become a limitation earlier. It does not mean however that such a computer is slower in terms of absolute compute time. %For example, we expect Beskow to be faster than Mira and Titan because of its newer and faster CPUs and interconnection network, despite higher values of $\alpha$ and $\beta$.
+where $t_c$ is the communication time, $m$ is the message length (number of 64-bit words) and $t_a$ is the inverse of the observed flop rate. The relevant quantities here are $\alpha$, the non-dimensional latency and $beta$ the inverse bandwidth, both computed following a "ping-pong" test as described in \cite{fischer:scaling}. During this test, the time required to send and receive messages of various sizes between different processors is measured and subsequently the values of $\alpha$ and $\beta$ are computed as the best fit for the linear model \ref{eqn:lincomm}.
+
+The value of $t_a$ is determined by performing a number of matrix-matrix multiplications representing the tensor products that are at the core of a spectral element solver \cite{fischer:hom}. The tensor products considered imply 3D elements with polynomial order ranging from $10$ to $13$. Three different interpretations of the memory layout for the matrices are considered leading to a total of $12$ tests. For each test, the time and number of operations are measured and flop rate is computed. Data are then averaged and $t_a$ is taken as the inverse of the mean flop rate. Results for the ping-pong test are shown in \reffig{fig:pingpong} along with the linear model for Beskow and Titan. The non-dimensional parameters $\alpha$ and $\beta$ are a relative measure of the computational to communication times. Consequently, it is expected that on a computer with high values of those parameters, like Beskow, the scalability limit will occur for a lower number of cores because communication will become a limitation earlier. It does not mean however that such a computer is slower in terms of absolute compute time. %For example, we expect Beskow to be faster than Mira and Titan because of its newer and faster CPUs and interconnection network, despite higher values of $\alpha$ and $\beta$.
 
 \begin{figure}
   \centering
