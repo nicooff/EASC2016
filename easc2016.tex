@@ -371,14 +371,16 @@ In a similar way, Equation \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the
 
 \subsection{Implementation}
 \label{sec:implementation}
-The geometry is meshed using hexahedral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 (insert ref documentation and check if the genmap description is still in.. and give it to gail for once!!!!)
+The geometry is meshed using hexahedral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 \cite{argonne:nekdoc}. An example of the repartion for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffig{fig:partition_vis}. In this picture, each element is colored according to the MPI rank it belongs to.
 \begin{figure}
   \centering
   \subfigure[Partition]{
   \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/partition2.png}
+  \label{fig:partition_vis}
   }
   \subfigure[Velocity magnitude]{
   \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/vel_magn.png}
+  \label{fig:flow_vis}
   }
   \caption{Partition of the elements and velocity magnitude in the pipe ($Re_{\tau}=180$).}
   \label{fig:partition}
@@ -504,7 +506,7 @@ detail in the next section.
 \subsection{Test Case: Pipe}
 \label{sec:pipe}
 
-The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \reftab{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
+The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \reftab{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. A snapshot of the velocity magnitude for the case $Re_{\tau} = 180$ is illustrated in \reffig{fig:flow_vis}.
 
 \begin{table}
 \centering
