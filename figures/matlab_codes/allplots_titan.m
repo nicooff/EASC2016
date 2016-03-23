@@ -30,7 +30,7 @@ refamg=NaN(size(b,2),size(a,2));
 effamg=NaN(size(b,2),size(a,2));
 
 
-formatt='../beskow/data_ReTau180_beskow';
+formatt='../titan/data_ReTau180_titan';
 filename=sprintf(formatt);
 A = importdata(filename,delimiterIn,headerlinesIn);
 ll=length(A(:,1));
@@ -44,7 +44,7 @@ compamg(1:ll,1)=A(:,7);
 refamg(:,1)=compamg(2,1)*procs(2,1)./procs(:,1);
 effamg(2:end,2)=totalamg(2,1)*procs(2,1)./(totalamg(2:end,1).*procs(2:end,1));
 
-formatt='../beskow/data_ReTau360_beskow';
+formatt='../titan/data_ReTau360_titan';
 filename=sprintf(formatt);
 A = importdata(filename,delimiterIn,headerlinesIn);
 i=find(procs(:,1)==A(1,1));
@@ -59,7 +59,7 @@ compamg(i:i+ll-1,2)=A(:,7);
 refamg(:,2)=compamg(i,2)*procs(i,2)./procs(:,2);
 effamg(:,2)=totalamg(i,2)*procs(i,2)./(totalamg(:,2).*procs(:,2));
 
-formatt='../beskow/data_ReTau550_beskow';
+formatt='../titan/data_ReTau550_titan';
 filename=sprintf(formatt);
 A = importdata(filename,delimiterIn,headerlinesIn);
 i=find(procs(:,2)==A(1,1));
@@ -74,7 +74,7 @@ compamg(i:i+ll-1,3)=A(:,7);
 refamg(:,3)=compamg(i,3)*procs(i,3)./procs(:,3);
 effamg(:,3)=totalamg(i,3)*procs(i,3)./(totalamg(:,3).*procs(:,3));
 
-formatt='../beskow/data_ReTau1000_beskow';
+formatt='../titan/data_ReTau1000_titan';
 filename=sprintf(formatt);
 A = importdata(filename,delimiterIn,headerlinesIn);
 i=find(procs(:,3)==A(1,1));
@@ -102,14 +102,14 @@ format='Scaling, ReTau%d';
 filename=sprintf(format,a(i));
     
 figure(i)
-% loglog(procs(:,i)*32,compxxt(:,i),'r', 'linewidth',2)
+% loglog(procs(:,i)*16,compxxt(:,i),'r', 'linewidth',2)
 % hold on
-% loglog(procs(:,i)*32,commxxt(:,i),'r--', 'linewidth',2)
-% loglog(procs(:,i)*32,totalxxt(:,i),'-rs', 'linewidth',2)
-% loglog(procs(:,i)*32,refamg(:,i),'g', 'linewidth',2)
-% loglog(procs(:,i)*32,compamg(:,i),'b', 'linewidth',2)
-% loglog(procs(:,i)*32,commamg(:,i),'b--', 'linewidth',2)
-% loglog(procs(:,i)*32,totalamg(:,i),'-bs', 'linewidth',2)
+% loglog(procs(:,i)*16,commxxt(:,i),'r--', 'linewidth',2)
+% loglog(procs(:,i)*16,totalxxt(:,i),'-rs', 'linewidth',2)
+% loglog(procs(:,i)*16,refamg(:,i),'g', 'linewidth',2)
+% loglog(procs(:,i)*16,compamg(:,i),'b', 'linewidth',2)
+% loglog(procs(:,i)*16,commamg(:,i),'b--', 'linewidth',2)
+% loglog(procs(:,i)*16,totalamg(:,i),'-bs', 'linewidth',2)
 loglog(procs(:,i),compxxt(:,i),'r', 'linewidth',2)
 hold on
 loglog(procs(:,i),commxxt(:,i),'r--', 'linewidth',2)
@@ -127,7 +127,7 @@ set(gcf,'units','points','position',[x0,y0,width,height])
 proc=procs(:,i);
 proc(isnan(proc)) = [];
 set(gca,'XTick',proc)
-%set(gca,'YTick',procs(:,i)*32)
+%set(gca,'YTick',procs(:,i)*16)
 set(gca,'XTickLabel',proc)
 set(gca,'FontName',fontname)
 set(gca,'FontSize',fontsize_grid)
@@ -135,7 +135,7 @@ set(gca,'FontSize',fontsize_labels)
 axis tight
 grid on
 ylabel('Time (seconds)')
-xlabel('No. nodes (MPI ranks/32)')
+xlabel('No. nodes (MPI ranks/16)')
 title(filename);
 ritaprint
 %%%% parallel efficiency.. IS CRAP
