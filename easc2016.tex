@@ -545,16 +545,16 @@ versus communication time and load imbalance.
 \begin{figure}
   \centering
   \subfigure[$Re_{\tau} = 180$]{
-  \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau180.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/mira/retau180.eps}
   }
   \subfigure[$Re_{\tau} = 360$]{
-  \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau360.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/mira/retau360.eps}
   }
   \subfigure[$Re_{\tau} = 550$]{
-  \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau550.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/mira/retau550.eps}
   }
   \subfigure[$Re_{\tau} = 1000$]{
-  \includegraphics[width=\linewidth]{./figures/mira/scaling_ReTau1000.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/mira/retau1000.eps}
   }
   \caption{BG/Q Mira}
   \label{fig:scaling_mira}
@@ -648,7 +648,7 @@ algorithms in Nek5000 should yield little overhead due to the halo update.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{./figures/cachelines.png}
+  \includegraphics[width=\linewidth]{./figures/cachearrow.eps}
   \caption{Cache misses on Mira for all 4 test cases(low to high degrees of freedom in direction of the arrow) The dashed red line: L1 cache size}
    \label{fig:cachemisses}
 \end{figure}
@@ -717,7 +717,7 @@ distribution of the execution time. The histogram includes the imbalance of
 workload as well as the resulting imbalance in the communication.
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{./figures/histogram.png}
+  \includegraphics[width=\linewidth]{./figures/loadbalance.eps}
   \caption{Histogram of the load imbalance at $2.184\times10^9$ degrees of freedom: number of processes per time spent in communication. Red bins:\% of processes at the lowest per core load, blue bins:\% of processes at highest per core load}
   \label{fig:imbalancehist}
 \end{figure}
@@ -737,6 +737,12 @@ on the ratio $\frac{n}{P}$.
   \label{fig:weakscaling}
 \end{figure}
 
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/projections.eps}
+  \caption{Convergence of solution with increase of projections space $L$. (green: $L=20$, red $L=0$) }
+  \label{fig:projections}
+\end{figure}
 % Beskow
 
 On Beskow, superlinear scaling is also visible over a large range of cores in \reffig{fig:scaling_beskow}. This shows once again the good strong scaling of Nek5000. We do not possess profiling results for Beskow and cannot study the cache misses but we assume that the reason for superlinearity is similar as for Mira. The scalability limit $r=1$ is more delicate to locate accurately because of the high variance in communication times (see \reffig{fig:pingpong_beskow}). We nevertheless present the scalability limit for the particular results from \reffig{fig:scaling_beskow} while keeping in mind that the intersection point would probably move significantly if the test had to be run again, depending on the nodes allocation, network traffic on the computer... However, we note that the scalability limit on Beskow is roughly one order of magnitude higher as on Mira in terms of degrees of freedom per core and $r=1$ is obtained at about $\frac{n}{P} \sim 20000 - 50000$. This is consistent with the values for the non-dimensional latency and inverse bandwidth from Table \reffig{tab:computer_charac} and the fact that Beskow has faster CPUs.
