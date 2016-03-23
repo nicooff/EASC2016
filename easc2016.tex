@@ -371,14 +371,16 @@ In a similar way, Equation \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the
 
 \subsection{Implementation}
 \label{sec:implementation}
-The geometry is meshed using hexahedral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 (insert ref documentation and check if the genmap description is still in.. and give it to gail for once!!!!)
+The geometry is meshed using hexahedral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 \cite{argonne:nekdoc}. An example of the repartion for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffig{fig:partition_vis}. In this picture, each element is colored according to the MPI rank it belongs to.
 \begin{figure}
   \centering
   \subfigure[Partition]{
   \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/partition2.png}
+  \label{fig:partition_vis}
   }
   \subfigure[Velocity magnitude]{
   \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/vel_magn.png}
+  \label{fig:flow_vis}
   }
   \caption{Partition of the elements and velocity magnitude in the pipe ($Re_{\tau}=180$).}
   \label{fig:partition}
@@ -387,35 +389,51 @@ The geometry is meshed using hexahedral elements, partioned for parallel computa
 \subsubsection{Code structure}
 \label{sec:code}
 
-The main loop iterates over the time steps. At each time step, the pressure is solved first and then the velocity components. Furthermore, each of those fields is projected before and after being solved. The pressure is solved with the GMRES method while conjugate gradient is used for the velocity. The pressure solve also includes the computation of the preconditioner based on the Schwarz overlapping method and coarse grid solve, which is not the case for the velocity and constitutes an important part of the work and communication.
+The structure for solving the equations \refeqn{eqn:hmhz_pres} and \refeqn{eqn:hmhz_vel} is illustrated in \refalg{alg:code_struct}. The main loop iterates over the time steps. At each time step, the pressure is solved first and then the velocity components. We can write equations \refeqn{eqn:hmhz_pres} and \refeqn{eqn:hmhz_vel} in discrete form as 
+\begin{align}
+H_p \; p = r_p, \\
+H_{\mathbf{u}} \; \mathbf{u} = r_{\mathbf{u}}.
+\end{align}
+$H_p$ and $H_{\mathbf{u}}$ are the Helmholtz operators for pressure and velocity respectively, while $r_p$ and $r_{\mathbf{u}}$ are the corresponding right hand sides or residuals. The first step to compute the solution of both fields is to compute the corresponding right hand side. The this right hand side is projected onto a subspace of previous solutions (subspaces are denoted by $X$). Then, the corrections $\delta p$ and $\delta \mathbf{u}$ are computed by solving the Helmholtz equation for the rejection of the right hand side. A simplified structure for the Helmholtz solver is shown in \refalg{alg:helmholtz}. During the Helmholtz solve, the pressure is solved with the GMRES method while conjugate gradient is used for the velocity. The pressure solve also includes the computation of the preconditioner based on the Schwarz overlapping method and coarse grid solve, which is not the case for the velocity and constitutes an important part of the work and communication.
 \begin{algorithm}
-\caption{Structure of Nek5000 using the PNPN method.}\label{alg:code_struct}
+\caption{PNPN method.}\label{alg:code_struct}
 \begin{algorithmic}
 \Procedure{Solver}{}
-\For {k=1,...,nsteps}
-\State $r_p \leftarrow \text{proj}_{X_{r_p}}(r_p)$
-\State $p \leftarrow \text{Helmoltz}(H,r_p)$
-\State $p \leftarrow \text{proj}_{X_p}(p)$
-\State $r_u \leftarrow \text{proj}_{X_{r_u}}(r_u)$
-\State $u \leftarrow \text{Helmoltz}(H,r_u)$
-\State $u \leftarrow \text{proj}_{X_u}(u)$
+\For {k=1,...,nsteps} \Comment{$ttotal$}
+\State \# \textbf{Compute Pressure}
+\State $r_p \leftarrow rhs_p(\mathbf{u}, \mathbf{f})$ \Comment{$trhsp$}
+\State $\delta r_p \leftarrow r_p - \text{proj}_{X_{r_p}}(r_p)$ \Comment{$tprojp1$}
+\State $\delta p \leftarrow \text{Helmholtz}(H_p,\delta r_p)$ \Comment{$thmhp$}
+\State $p \leftarrow p + \delta p$ \Comment{$tprojp2$}
+\State $X_p \leftarrow \left\{ X_p, \text{proj}_{X_{p}}(p) \right\}$ \Comment{$tprojp2$}
+\State $X_{r_p} \leftarrow \left\{ X_{r_p}, \text{proj}_{X_{r_p}}(H_p p) \right\}$ \Comment{$tprojp2$}
+%\State $X_p, X_{r_p} \leftarrow \text{Update subspaces}(X_p, X_{r_p})$ 
+\State \# \textbf{Compute Velocity}
+\State $r_{\mathbf{u}} \leftarrow rhs_{\mathbf{u}}(p, \mathbf{u}, \mathbf{f})$ \Comment{$trhsv$}
+\State $\delta r_{\mathbf{u}} \leftarrow r_{\mathbf{u}} - \text{proj}_{X_{r_{\mathbf{u}}}}(r_{\mathbf{u}})$ \Comment{$tprojv1$}
+\State $\delta {\mathbf{u}} \leftarrow \text{Helmholtz}(H_{\mathbf{u}},\delta r_{\mathbf{u}})$ \Comment{$thmhv$}
+\State ${\mathbf{u}} \leftarrow \mathbf{u} + \delta \mathbf{u}$ \Comment{$tprojv2$}
+\State $X_{\mathbf{u}} \leftarrow \left\{ X_{\mathbf{u}}, \text{proj}_{X_{\mathbf{u}}}(\mathbf{u}) \right\}$ \Comment{$tprojv2$}
+\State $X_{r_{\mathbf{u}}} \leftarrow \left\{ X_{r_{\mathbf{u}}}, \text{proj}_{X_{r_\mathbf{u}}}(H_{\mathbf{u}} \mathbf{u}) \right\}$ \Comment{$tprojv2$}
+%\State $X_{\mathbf{u}}, X_{r_{\mathbf{u}}} \leftarrow \text{Update subspaces}(X_{\mathbf{u}}, X_{r_{\mathbf{u}}})$ 
 \EndFor
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
 \begin{algorithm}
-\caption{Helmholtz solve.}\label{alg:code_struct}
+\caption{Helmholtz solve.}\label{alg:helmholtz}
 \begin{algorithmic}
 \Procedure{Helmholtz}{$H, r$}
 \If {Velocity}
 \State $x \leftarrow CG(H, r)$
 \ElsIf {Pressure}
-\State $\left(M_0^{-1}\right)_{\text{Sch}} \leftarrow$ overlapping Schwarz
-\State $\left(M_0^{-1}\right)_{\text{cgs}} \leftarrow$ coarse grid solve
+\State $\left(M_0^{-1}\right)_{\text{Sch}} \leftarrow$ Overlapping Schwarz()
+\State $\left(M_0^{-1}\right)_{\text{cgs}} \leftarrow$ Coarse grid solve() \Comment{$tcoarse$}
 \State $M_0^{-1} \leftarrow \left(M_0^{-1}\right)_{\text{Sch}} + \left(M_0^{-1}\right)_{\text{cgs}}$
 \State $x \leftarrow GMRES(M_0^{-1}, H, r)$
 \EndIf
+\State \textbf{return} x
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
@@ -429,13 +447,13 @@ for our use case. We are running the code on our test case (see
 projections and are measuring the time from the 30th to the 50th time step; in
 total 20 time steps. 
 \paragraph{MPI Timers}
-Based on the structure presented in \refsec{sec:code} we placed 9 timers in the code that are
+Based on the structure presented in \refsec{sec:code} we placed 10 timers in the code that are
 only switched on during the last 20 time steps. Each timer measures the wall
 clock time using the MPI timer ({\tt MPI\_Wtime}) followed by a barrier
 ({\tt MPI\_Barrier}) guaranteeing coherent and synchronized measurements. We
 have run the code without synchronization and timers to evaluate the created
 overhead due to our measurements. In all instances this overhead has been far
-below 5\%. The main timer computes the total time spent in the outer timestepping loop for the last 20 timesteps. Then, we have timers for the compute time of $\mathbf{F} \left( \mathbf{u}^{n} \right)$, i.e.\ the right hand side of equation (\refeqn{eqn:rhs1}), and of the right hand side of equation (\refeqn{eqn:hmhz_pres}). We also time all the different projections separately, using 4 timers (one timer before solving and one after for both pressure and velocity). The time spent in the Helmholtz solves is measured as well for pressure and velocity. Within the pressure solver, we put a timer around the coarse grid solve. Finally, we gather in an additional timer most of the remaining computations such that our timers account for more that 95\% of the total time. We learn from these timers that the projections are in most cases the most time consuming functions, followed by the Helmholtz solves. However, these timers do not provide information about the repartition between the time spent in computation and communication, which is the core element when assessing scalability and efficiency of a parallel code. Therefore, we do not present the results obtained with those timers and instead investigate in more details the timings produced by more adapted sampling and profiling tools.
+below 5\%. The main timer ($ttotal$) measures the total time spent in the outer timestepping loop for the last 20 timesteps. Then, we have timers for the compute time of the right hand side of equation \refeqn{eqn:hmhz_pres} ($trhsp$), and of the right hand side of equation \refeqn{eqn:hmhz_vel} ($trhsv$). We also time all the different projections separately, using two timers for both the pressure and velocity: one timer for projecting the residuals before the Helmholtz solve ($tprojp1$ and $tprojv1$) and one for updating and projecting the field after the solve ($tprojp2$ and $tprojv2$). The timer for this second projection step also includes the time to update the subspaces. The time spent in the Helmholtz solves is measured as well for pressure and velocity ($thmhp$ and $thmhv$). Within the pressure solver, we put a timer around the coarse grid solve ($tcoarse$). Finally, we gather in an additional timer most of the remaining computations such that our timers account for more that 95\% of the total time. We learn from these timers that the projections are in most cases the most time consuming functions, followed by the Helmholtz solves. However, these timers do not provide information about the repartition between the time spent in computation and communication, which is the core element when assessing scalability and efficiency of a parallel code. Therefore, we do not present the results obtained with those timers and instead investigate in more details the timings produced by more adapted sampling and profiling tools.
 \paragraph{Craypat and Hardware Performance Monitor}
 In order to measure the time spent in communication we relied on Craypat for
 Beskow and Titan and on Hardware Performance Monitor (HPM) for Mira. Both tools
@@ -488,7 +506,7 @@ detail in the next section.
 \subsection{Test Case: Pipe}
 \label{sec:pipe}
 
-The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \reftab{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. 
+The test case considered is the turbulent flow in a straight pipe. A thorough description of the flow configuration as well as a detailed analysis of the physical results can be found in \cite{Khoury2013}. The flow was run at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. A summary of the different simulations and associated number of elements and number of grid points is presented in Table \reftab{tab:pipe_conf}. The friction Reynolds number is defined as $Re_{\tau} = u_{\tau} R / \nu$, where $u_{\tau}$ is the friction velocity $R$ is the radius of the pipe and  $\nu$ is the kinematic viscosity. The bulk Reynolds number is defined as $Re_{b} = 2 U_b R / \nu$, where $U_b$ is the mean bulk velocity. A snapshot of the velocity magnitude for the case $Re_{\tau} = 180$ is illustrated in \reffig{fig:flow_vis}.
 
 \begin{table}
 \centering
@@ -563,16 +581,16 @@ versus communication time and load imbalance.
 \begin{figure}
   \centering
   \subfigure[$Re_{\tau} = 180$]{
-  \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau180_beskow.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/beskow/scaling_ReTau180_beskow.eps}
   }
   \subfigure[$Re_{\tau} = 360$]{
-  \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau360_beskow.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/beskow/scaling_ReTau360_beskow.eps}
   }
   \subfigure[$Re_{\tau} = 550$]{
-  \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau550_beskow.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/beskow/scaling_ReTau550_beskow.eps}
   }
   \subfigure[$Re_{\tau} = 1000$]{
-  \includegraphics[width=\linewidth]{./figures/beskow/scaling_ReTau1000_beskow.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/beskow/scaling_ReTau1000_beskow.eps}
   }
 \caption{Beskow}
 \label{fig:scaling_beskow}
@@ -581,20 +599,21 @@ versus communication time and load imbalance.
 \begin{figure}
   \centering
   \subfigure[$Re_{\tau} = 180$]{
-  \includegraphics[width=\linewidth]{./figures/titan/scaling_ReTau180_titan.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/titan/scaling_ReTau180_titan.eps}
   }
   \subfigure[$Re_{\tau} = 360$]{
-  \includegraphics[width=\linewidth]{./figures/titan/scaling_ReTau360_titan.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/titan/scaling_ReTau360_titan.eps}
   }
   \subfigure[$Re_{\tau} = 550$]{
-  \includegraphics[width=\linewidth]{./figures/titan/scaling_ReTau550_titan.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/titan/scaling_ReTau550_titan.eps}
   }
   \subfigure[$Re_{\tau} = 1000$]{
-  \includegraphics[width=\linewidth]{./figures/titan/scaling_ReTau1000_titan.pdf}
+  \includegraphics[width=0.85\linewidth]{./figures/titan/scaling_ReTau1000_titan.eps}
   }
 \caption{Titan}
 \label{fig:scaling_titan}
 \end{figure}
+
 
 
 \subsection{Weak and Strong Scaling}
