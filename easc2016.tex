@@ -88,8 +88,8 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{On the Strong Scaling of Nek5000 on Petascale Systems}
-\subtitle{Subtitle}
+\title{On the Strong Scaling of the Spectral Element Solver Nek5000 on Petascale Systems}
+%\subtitle{Subtitle}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -478,7 +478,7 @@ cache misses, as well as weak and strong scaling. Load imbalance and cache
 misses are only measured on Mira via the HPM profiling library. 
 While relying on the results of \cite{tufo:terascale}, we want in particular to verify
 experimentally the strong scaling limit which is defined as the ratio of $\dfrac{N}{P}$ where
-$\dfrac{T_a}{T_c}\leq 1$ inequality is equal to $1$ with increasing $P$. 
+$$\dfrac{T_a}{T_c}\leq 1$$ inequality is equal to $1$ with increasing $P$. 
 A generic case, widely known across the CFD community, is used to explore the
 scaling behavior of Nek. This should allow potential users to estimate and
 compare the scaling of Nek to other CFD software.
