@@ -584,7 +584,7 @@ derivative $\eta'$ of the
 parallel efficiency
 
 $$
-\eta(N,P)=\frac{T_a(N,1)}{T_a(N,P)\cdot P}
+\eta(N,P)=\frac{T(N,1)}{T(N,P)\cdot P}
 $$
 \noindent is equal to $0$. This rather an upper bound of the strong scaling
 limit that would in most of our test runs never be observed. Hence, it has
@@ -614,8 +614,8 @@ element level so that one element may not be partitioned further.
 As anticipated in \refsec{sec:timers}, we measure the communication time and
 computation time of the chosen 20 timesteps. 
 
-In \cite{fischer:scaling} the strong scaling limit where $r=\dfrac{T_a}{T_c}=1$ was estimated
-to be at about $\frac{n}{P}=2000$ for the conjugate gradient (CG) and $20000$ or
+In \cite{fischer:scaling} the strong scaling limit (see \refeqn{eq:strong}) was estimated
+to be at about $\frac{N}{P}=2000$ for the conjugate gradient (CG) and $20000$ or
 $7000$ (BG/Q) for the algebraic multigrid (AMG). As described in \refsec{sec:code}, the
 Nek5000 solver using the PNPN method consists of several CG, GMRES and XXT or AMG solves. Furthermore,
 there is an overhead for the setup, the projections, the coarse solve and other
