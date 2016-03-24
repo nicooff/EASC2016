@@ -585,16 +585,13 @@ as the minimal number of grid points per process $\frac{N}{P}$ by finding $P$ su
 \end{equation} 
 
 \noindent Alternatively, the strong scaling limit is commonly described by the
-derivative $\eta'$ of the
-parallel efficiency
-
-$$
-\eta(N,P)=\frac{T(N,1)}{T(N,P)\cdot P}
-$$
-\noindent being equal to $0$. This is rather an upper bound of the strong scaling
+derivative $\frac{dT}{dP}$ of the
+of the total time $T(N,P)$ being equal to $0$. So the point where the runtime
+starts increasing again with increasing $P$. That point represents the fastest
+time to solution. This is rather an upper bound of the strong scaling
 limit that would in most of our test runs never be observed. Hence, it has
 little practical meaning to the user, as he would never run the code in that
-regime. \refeqn{eq:strong} gives a lower bound and much more practical notion of the strong
+regime, either due to the granularity limit or due to high computational costs. \refeqn{eq:strong} gives a lower bound and much more practical notion of the strong
 scaling limit. If communication takes longer than
 computation, the code is deemed to be at the strong scaling limit where the
 scaling starts diverging significantly from the perfect linear scaling. 
