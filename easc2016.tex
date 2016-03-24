@@ -815,10 +815,10 @@ lower strong scaling limit, it outperforms XXT in time to solution (e.g. $Re_{\t
 550$). This difference is marginal on Titan and visible on Beskow for $Re_{\tau} = 
 550$ and $1000$ without being as pronounced as on Mira. 
 However, we can claim that using AMG on these
-machines is never detrimental with regard to time to solution. However, taking
-all the machines into account, we see that AMG general leaps ahead if the
+machines is never detrimental with regard to time to solution. Therefore, when taking
+all the machines into account, we see that AMG generally leaps ahead if the
 systems rely on a low latency network combined with a high element count. In
-\reftab{tab:xxtamg} we compare XXT and AMG on $Re_{\tau} 550$ at the strong
+\reftab{tab:xxtamg} we compare XXT and AMG on $Re_{\tau} = 550$ at the strong
 scaling limit of AMG (4096 nodes). The amount of data communicated by XXT is by
 an order of magnitude higher, while AMG uses twice as many MPI calls. 
 \begin{table}
