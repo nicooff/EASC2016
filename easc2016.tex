@@ -555,31 +555,42 @@ $1000$ & $37,700$ & $1,264,032$ & $12$ & $2.184 \times 10^9$\\
 \label{sec:analysis}
 We assume that large scale runtime performance is influenced mainly by 
 \begin{enumerate}
-  \item network topology, \label{enum:a}
-  \item time $T_a$ and $T_c$ spent in computation and communication,
-    respectively, as well as latency and bandwidth\label{enum:b},
-  \item ratio of runtime and communication times: $r \leq \dfrac{T_a}{T_c}$,\label{enum:c}
-  \item degrees of freedom $n$ per process $P$: $\dfrac{n}{P}$,\label{enum:d}
-  \item and partitioning imbalance.\label{enum:e}
+  \item system hardware consisting of the network topology, latency and
+    bandwidth\label{enum:a},
+  \item time $T_a$ and $T_c$ spent in computation and communication largely
+    dependent on \ref{enum:a}. and on their algorithmic complexities,
+  \item and partitioning.\label{enum:c}
 \end{enumerate}
 
 The partitioning for our test case (see \refsec{sec:pipe}) is considered to be
 topologically equivalent to a cube. The resulting runtime complexities are
-extensively described in \cite{fischer:scaling}. We avoid the discussion of
-mapping efficiently complex partitionings on network topologies and focus on
-extracting insight on \ref{enum:b} to \ref{enum:e} from our conducted runs. Our
-profiling tools and wall clock timers allow us to measure the load imbalance,
+extensively described in \cite{fischer:scaling} for the Mira system. Based on
+these theoretical results we use profiling tools and wall clock timers to
+measure the load imbalance,
 cache misses, as well as weak and strong scaling. Load imbalance and cache
 misses are only measured on Mira via the HPM profiling library. 
-While relying on the results of \cite{fischer:scaling}, we want in particular to verify
+We want in particular to verify
 experimentally the strong scaling limit for a given problem of size $N$. 
-In this paper, the strong scaling limit for a problem of size $N$ is the defined
-as the grid points per process $\frac{N}{P}$ by finding $P$ such that
+In this paper, the strong scaling limit for a problem of size $N$ is defined
+as the minimal grid points per process $\frac{N}{P}$ by finding $P$ such that
 
 \begin{equation}
   \dfrac{T_a(N,P)}{T_c(N,P)}=1,\mbox{ for problem size }N.
   \label{eq:strong}
 \end{equation} 
+
+\noindent Another way of defining the strong scaling limit is where the
+derivative $\eta'$ of the
+parallel efficiency
+
+$$
+\eta(N,P)=\frac{T_a(N,1)}{T_a(N,P)\cdot P}
+$$
+\noindent is equal to $0$. This rather an upper bound of the strong scaling
+limit that would in most of our test runs never be observed. Hence, it has
+little practical meaning to the user, as he would never run the code in that
+regime. \refeqn{eq:strong} gives a lower bound and much more practical notion of the strong
+scaling limit.
 
 A generic case, widely known across the CFD community, is used to explore the
 scaling behavior of Nek. This should allow potential users to estimate and
