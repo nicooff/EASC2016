@@ -197,7 +197,7 @@ and Maxwell Hutchinson
 \maketitle
 \begin{abstract}
 The present work is targeted at performing a strong scaling and benchmarking study of the high-order spectral element solver Nek5000.  Prior studies such as \cite{fischer:scaling} indicated what is a recommandable metric for strong scalability from a theoretical viewpoint, which we test here extensively on three parallel machines with different performance characteristics. The test cases considered for the simulations correspond to a turbulent flow in a straight pipe at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. Results on various machines with various architectures and interconnect networks, namely Mira (IBM Blue Gene/Q), Beskow (Cray XC40) and Titan (Cray XK7) are studied.  Considering the linear model for parallel communication we quantify the machine characteristics in order to better assess the scaling behaviors of the code. Subsequently the main blocks of the code are timed to obtain computation cost while sampling and profiling tools are used to measure the communication time over a large range of compute cores.
-We also study the effect of the two coarse grid solvers XXT and AMG on the computational time. Superlinear scaling due to a reduction in cache misses is observed on each computer. The strong scaling limit is attained for roughly $5000-10,000$ degrees of freedom per core on Mira, $30,000-50,0000$ on Beskow, with only a small impact of the problem size for both machines, and ranges between $10,000$ and $220,000$ depending on the problem size on Titan. This work aims to be a reference for Nek users and serve as a basis for the development of the code toward the advent of exascale supercomputers.
+We also study the effect of the two coarse grid solvers XXT and AMG on the computational time. Super linear scaling due to a reduction in cache misses is observed on each computer. The strong scaling limit is attained for roughly $5000-10,000$ degrees of freedom per core on Mira, $30,000-50,0000$ on Beskow, with only a small impact of the problem size for both machines, and ranges between $10,000$ and $220,000$ depending on the problem size on Titan. This work aims to be a reference for Nek users and serve as a basis for the development of the code toward the advent of exascale supercomputers.
 \end{abstract}
 
 
@@ -586,11 +586,13 @@ parallel efficiency
 $$
 \eta(N,P)=\frac{T(N,1)}{T(N,P)\cdot P}
 $$
-\noindent is equal to $0$. This rather an upper bound of the strong scaling
+\noindent is equal to $0$. This is rather an upper bound of the strong scaling
 limit that would in most of our test runs never be observed. Hence, it has
 little practical meaning to the user, as he would never run the code in that
 regime. \refeqn{eq:strong} gives a lower bound and much more practical notion of the strong
-scaling limit.
+scaling limit. If communication takes longer than
+computation, the code is deemed to be at the strong scaling limit where the
+scaling starts diverging significantly from the perfect linear scaling. 
 
 A generic case, widely known across the CFD community, is used to explore the
 scaling behavior of Nek. This should allow potential users to estimate and
@@ -601,20 +603,18 @@ detail in the next section.
 
 \section{Results}
 
-\subsection{Scaling plots}
-
 Our four test cases were run with various processor counts on three systems. The
 lower bound for the processor count is given by the amount of RAM to fit a given
 problem into memory. Nek5000 has roughly a memory requirement of 500 fields
 times the number of degrees of freedom. The upper bound was either due to the
 administrative limit of getting access to the maximum number of processors
-(Beskow and Titan) or by the limit of having 1 or 2 elements per process. As has
+(Beskow and Titan) or by the limit of having at least one element per process. As has
 been pointed out in \refsec{sec:code}, the parallelization of Nek5000 is at the
-element level so that one element may not be partitioned further. 
+element level is so that one element may not be partitioned further. 
 As anticipated in \refsec{sec:timers}, we measure the communication time and
 computation time of the chosen 20 timesteps. 
 
-In \cite{fischer:scaling} the strong scaling limit (see \refeqn{eq:strong}) was estimated
+In \cite{fischer:scaling} the strong scaling limit \refeqn{eq:strong} was estimated
 to be at about $\frac{N}{P}=2000$ for the conjugate gradient (CG) and $20000$ or
 $7000$ (BG/Q) for the algebraic multigrid (AMG). As described in \refsec{sec:code}, the
 Nek5000 solver using the PNPN method consists of several CG, GMRES and XXT or AMG solves. Furthermore,
@@ -625,10 +625,19 @@ behavior. Our runtimes give an overall impression of the Nek5000 behaviour on
 various systems based on a generic well known case in CFD (see
 \refsec{sec:pipe}). 
 
+\subsection{Scaling plots}
+
 The scaling plots for all three
 systems in \reffig{fig:scaling_mira}, \reffig{fig:scaling_beskow} and \reffig{fig:scaling_titan} are the fundamental
 measurements for our further analysis of the weak/strong scaling, computation
-versus communication time and load imbalance.
+versus communication time and load imbalance. They show the compute time and
+communication time as well as the total time for both XXT and AMG over all our
+test cases and computer systems. They are all done in logscale because we were
+doubling the number of processes $P$. To help identify linear scaling of the
+compute time, the optimal linear scaling line of the compute time was added. We
+do not compare to linear scaling of the total time as we operate in the strong
+scaling limit regime, where parallel efficiency is supposed to be well below $1$.
+
 \begin{figure}
   \centering
   \subfigure[$Re_{\tau} = 180$]{
@@ -689,17 +698,15 @@ versus communication time and load imbalance.
 
 \subsection{Strong scaling limit}
 
-The ratio of computation and communication time $r=\frac{T_a}{T_c}$ is a key
-indicator for the strong scaling limit. If communication takes longer than
-computation, the code is deemed to be at the strong scaling limit where the
-scaling diverges significantly from the perfect linear scaling. For both XXT and
-AMG this point is clearly determined in the plots where the computation time
-crosses the communication time. The approximations of values for $\frac{n}{P}$ where
-$r=1$ were determined using linear interpolation (see \reftab{tab:stronglimit}).
+For both XXT and
+AMG the strong scaling limit is determined graphically in the plots where the computation time
+matches the communication time. The approximations for minimal values of
+$\frac{N}{P}$ were determined using linear interpolation (see
+\reftab{tab:stronglimit}).
 
 \begin{table}  
   \caption{Strong Scaling Limit for all 4 test cases on Beskow, Titan and Mira
-  in degrees of freedom per core $\frac{n}{P}$ with 2 processes per core on Mira, 1 process per core on Beskow and Titan}
+  in degrees of freedom per core $\frac{N}{P}$ with 2 processes per core on Mira, 1 process per core on Beskow and Titan}
   \begin{tabular}{c||cccc}
     \hline
     \hline
@@ -730,17 +737,17 @@ $r=1$ were determined using linear interpolation (see \reftab{tab:stronglimit}).
 
 % 
 
-In practice we observed a strong scaling limit $r=1$ for XXT at roughly $1900<
-\frac{n}{P} < 2300$ and for AMG at $2300<\frac{n}{P}<4000$ on Mira, below the $7000$
-anticipated in \cite{fischer:scaling}. On Beskow, the scalability limit $r=1$ is 
+In practice we observed a strong scaling limit for XXT at roughly $1900<
+\frac{N}{P} < 2300$ and for AMG at $2300<\frac{N}{P}<4000$ on Mira, below the $7000$
+anticipated in \cite{fischer:scaling}. On Beskow, the scalability limit is 
 more delicate to locate accurately because 
 of the high variance in communication times (see \reffig{fig:pingpong_beskow}), 
 especially for the small cases. We nevertheless present the scalability limit for 
 the particular results from \reffig{fig:scaling_beskow} while keeping in mind that
 this is just the result for one run and not an average value. We note that
 the scalability limit on Beskow is roughly one order of magnitude higher than on 
-Mira in terms of degrees of freedom per core and $r=1$ is obtained at about 
-$\frac{n}{P} \sim 20000 - 50000$. This is consistent with the values for the
+Mira in terms of degrees of freedom per core and is located at about 
+$\frac{N}{P} \sim 20000 - 50000$. This is consistent with the values for the
 non-dimensional latency $\alpha$ %and inverse bandwidth $\beta$ 
 from Table \reffig{tab:alpha_beta} 
 and the fact that Beskow has faster CPUs. Indeed, as mentioned earlier in \refsec{sec:hardware}, 
@@ -751,10 +758,10 @@ is almost independent on the problem size and number of cores that are used. It 
 that both machines provide a good interconnection between nodes independently
 on their position on the network.
 On Titan, the scalability limit exhibits a different behavior and the number of degrees of freedom per core where
-$r=1$ increases significantly with bigger cases as we see from Table \reffig{tab:stronglimit}.
- The limit goes from $\frac{n}{P} \sim 9000$ to $\frac{n}{P} \sim 228000$ between 
-the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for XXT. It goes from $\frac{n}{P} 
-\sim 11000$ to $\frac{n}{P} \sim 132000$ between the cases $Re_{\tau}=180$ and 
+the minimal $\frac{N}{P}$ increases significantly with bigger cases as we see from Table \reffig{tab:stronglimit}.
+ The limit goes from $\frac{N}{P} \sim 9000$ to $\frac{N}{P} \sim 228000$ between 
+the cases $Re_{\tau}=180$ and $Re_{\tau}=1000$ for XXT. It goes from $\frac{N}{P} 
+\sim 11000$ to $\frac{N}{P} \sim 132000$ between the cases $Re_{\tau}=180$ and 
 $Re_{\tau}=1000$ for AMG. This limitation of the weak scaling cannot be explained 
 from the non-dimensional latencies and bandwidths from \reftab{tab:alpha_beta}. 
 Looking at the non-dimensional latency $\alpha$ we do expect Titan to have similar values as Mira. 
@@ -781,11 +788,11 @@ $\alpha$ and $\beta$ from \reftab{tab:alpha_beta} become irrelevant on Titan
 when the number of cores is too high.
 
 
-\subsection{Superlinearity}
+\subsection{Super Linearity}
 % Superlinearity
 
 In theory the compute time scaling should exactly match linear scaling
-as computational work is distributed according to the ratio $\frac{n}{P}$. All
+as computational work is distributed according to the ratio $\frac{N}{P}$. All
 algorithms in Nek5000 should yield little overhead due to the halo update.
 
 \begin{figure}
@@ -800,7 +807,7 @@ observation holds true with all timers and profilers switched off.
 Numerically there is no explanation for this behavior. 
 
 The usual explanation for super linear scaling is a sudden decrease of the cache
-misses for decreasing $\frac{n}{P}$, as parts of the solver can entirely work on
+misses for decreasing $\frac{N}{P}$, as parts of the solver can entirely work on
 data that lies in the cache. 
 To investigate this, we extracted the cache misses on Mira provided by HPM (see
 \reffig{fig:cachemisses}). Mira is equipped with L1 cache of 16kb. The L2 cache
@@ -810,7 +817,7 @@ over 97\% cache misses. The L1 cache can be filled with $2048$ double precision,
 size below which all gridpoints would theoretically fit into cache. As we run with 2 processes per core, this would be at roughly 1000
 degrees of freedom per process. Although the data fields achieve those sizes only at the strong scaling
 limit we do observe a general decrease in cache misses with decreasing
-$\frac{n}{P}$. In summary, we attribute the super linear scaling to cache
+$\frac{N}{P}$. In summary, we attribute the super linear scaling to cache
 management and pipelining on the CPU of Mira. We do not possess profiling results 
 for Beskow or Titan and cannot study the cache misses there but we assume that the 
 reason for super linearity is similar as for Mira.
@@ -877,7 +884,7 @@ We can investigate the weak scaling on Mira a bit more in details. On this compu
 bandwidth. This holds true for peer to peer communication as well as for the
 all-reduce (see \reffig{fig:pingpong}). Across the four test cases we can observe a weak scaling in
 \reffig{fig:weakscaling}. It proves that the scaling on Mira is only dependent
-on the ratio $\frac{n}{P}$. 
+on the ratio $\frac{N}{P}$. 
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/weak.png}
