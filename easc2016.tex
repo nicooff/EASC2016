@@ -527,9 +527,17 @@ extracting insight on \ref{enum:b} to \ref{enum:e} from our conducted runs. Our
 profiling tools and wall clock timers allow us to measure the load imbalance,
 cache misses, as well as weak and strong scaling. Load imbalance and cache
 misses are only measured on Mira via the HPM profiling library. 
-While relying on the results of \cite{tufo:terascale}, we want in particular to verify
-experimentally the strong scaling limit which is defined as the ratio of $\dfrac{N}{P}$ where
-$$\dfrac{T_a}{T_c}\leq 1$$ inequality is equal to $1$ with increasing $P$. 
+While relying on the results of \cite{fischer:scaling}, we want in particular to verify
+experimentally the strong scaling limit for a given problem of size $N$. 
+In this paper, the strong scaling limit for a problem of size $N$ is the defined
+as the grid points per process $\frac{N}{P}$ by finding $P$ such that
+
+\begin{equation}
+  \dfrac{T_a(N,P)}{T_c(N,P)}=1,\mbox{ for problem size }N.
+  \label{eq:strong}
+\end{equation} 
+
+
 A generic case, widely known across the CFD community, is used to explore the
 scaling behavior of Nek. This should allow potential users to estimate and
 compare the scaling of Nek to other CFD software.
@@ -550,7 +558,8 @@ element level so that one element may not be partitioned further.
 As anticipated in \refsec{sec:timers}, we measure the communication time and
 computation time of the chosen 20 timesteps. 
 
-In \cite{fischer:scaling} the strong scaling limit where $r=\dfrac{T_a}{T_c}=1$ was estimated
+In \cite{fischer:scaling}, the strong scaling limit, as defined in
+\refeqn{eq:strong}, was estimated
 to be at about $\frac{n}{P}=2000$ for the conjugate gradient (CG) and $20000$ or
 $7000$ (BG/Q) for the algebraic multigrid (AMG). As described in \refsec{sec:code}, the
 Nek5000 solvers XXT and PNPN consist of several CG and AMG solves. Furthermore,
