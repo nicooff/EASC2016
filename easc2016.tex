@@ -716,25 +716,26 @@ $\frac{N}{P}$ were determined using linear interpolation (see
 \begin{table}  
   \caption{Strong Scaling Limit for all 4 test cases on Beskow, Titan and Mira
   in degrees of freedom per core $\frac{N}{P}$ with 2 processes per core on Mira, 1 process per core on Beskow and Titan}
+  \centering
   \begin{tabular}{c||cccc}
     \hline
     \hline
     {\bf Mira}
-    &$Re_{\tau} = 180$&$Re_{\tau} = 360$&$Re_{\tau} = 550$&$Re_{\tau} = 1000$\\
+    &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
     XXT&4496&3412&4192&\\
     AMG&5040&5578&6200&9750\\
     \hline
     \hline
     {\bf Beskow}
-    &$Re_{\tau} = 180$&$Re_{\tau} = 360$&$Re_{\tau} = 550$&$Re_{\tau} = 1000$\\
+    &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
     XXT&45700&19200&26000& - \\
     AMG&24800&33000&48000& - \\
     \hline
     \hline
     {\bf Titan}
-    &$Re_{\tau} = 180$&$Re_{\tau} = 360$&$Re_{\tau} = 550$&$Re_{\tau} = 1000$\\
+    &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
     XXT&9000&24000&65000&228000\\
     AMG&11000&36000&68000&132000\\
@@ -852,11 +853,12 @@ an order of magnitude higher, while AMG uses twice as many MPI calls.
 \begin{table}
 \caption{Number of MPI calls and data communicated on $P=131,072$ at $Re_{\tau}=
 550$}
+\centering
 \begin{tabular}{l||c|c||c|c}
 \hline
 &\multicolumn{2} {c||} {\bf AMG}&\multicolumn{2} {c} {\bf XXT}\\
 \hline
-MPI Routine   &  \#calls  &   avg. bytes  &   \#calls  &   avg. bytes \\ 
+MPI Routine   &  \#calls  &  bytes  &   \#calls  & bytes \\ 
 \hline
 MPI\_Isend     &  96638   &       360.5   &  62336     &    6363.8    \\     
 MPI\_Irecv     &  96638   &       362.7   &    5916    &    61885.4   \\   
