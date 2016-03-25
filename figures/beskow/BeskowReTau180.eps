@@ -1,13 +1,13 @@
-%!PS-Adobe-2.0 EPSF-1.2
+%!PS-Adobe-3.0 EPSF-3.0
 %%Creator: MATLAB, The MathWorks, Inc. Version 8.3.0.532 (R2014a). Operating System: Linux 3.19.0-49-generic #55-Ubuntu SMP Fri Jan 22 02:10:24 UTC 2016 x86_64.
 %%Title: ./BeskowReTau180.eps
-%%CreationDate: 03/24/2016  22:06:10
+%%CreationDate: 03/24/2016  22:22:18
 %%DocumentNeededFonts: Times-Roman
 %%+ Helvetica
 %%DocumentProcessColors: Cyan Magenta Yellow Black
-%%Extensions: CMYK
+%%LanguageLevel: 2
 %%Pages: 1
-%%BoundingBox:    32   185   561   586
+%%BoundingBox:    18   179   594   612
 %%EndComments
 
 %%BeginProlog
@@ -138,7 +138,10 @@
 /ds {stri astore pop} bdef
 /dt {dtri astore pop} bdef
 /db {2 copy /cols xdef /rows xdef mul dup 3 mul string
-  currentfile exch readhexstring pop
+  currentfile 
+  3 index 0 eq {/ASCIIHexDecode filter}
+  {/ASCII85Decode filter 3 index 2 eq {/RunLengthDecode filter} if }
+  ifelse exch readstring pop
   dup 0 3 index getinterval /rbmap xdef
   dup 2 index dup getinterval /gbmap xdef
   1 index dup 2 mul exch getinterval /bbmap xdef pop pop}bdef
@@ -159,7 +162,7 @@ end
 
 %%Page: 1 1
 %%BeginPageSetup
-%%PageBoundingBox:    32   185   561   586
+%%PageBoundingBox:    18   179   594   612
 MathWorks begin
 bpage
 %%EndPageSetup
@@ -170,7 +173,7 @@ bplot
 /dpi2point 12 def
 portraitMode 0216 7344 csm
 
-  175   304  6345  4811 MR c np
+    0     0  6912  5185 rc
 86 dict begin %Colortable dictionary
 /c0 { 0.000000 0.000000 0.000000 sr} bdef
 /c1 { 1.000000 1.000000 1.000000 sr} bdef
@@ -183,7 +186,7 @@ portraitMode 0216 7344 csm
 c0
 1 j
 1 sg
-   0    0 6913 5186 PR
+   0    0 6913 5186 rf
 6 w
 0 4226 5356 0 0 -4226 899 4615 4 MP
 PP
@@ -959,7 +962,7 @@ SO
  899  389 mt 6255  389 L
  899 4615 mt  899  389 L
 6255 4615 mt 6255  389 L
-gs 899 388 5357 4228 MR c np
+gs 899 388 5357 4228 rc
 24 w
 /c8 { 1.000000 0.000000 0.000000 sr} bdef
 c8
@@ -996,7 +999,7 @@ DP
 DP
 0 -58 -58 0 0 58 58 0 6226 2670 5 MP
 DP
-gs 899 388 5357 4228 MR c np
+gs 899 388 5357 4228 rc
 /c9 { 0.000000 1.000000 0.000000 sr} bdef
 c9
 596 422 595 423 595 423 595 422 595 423 595 423 595 422 595 423 
@@ -1034,7 +1037,7 @@ DP
 DP
 0 -58 -58 0 0 58 58 0 6226 2502 5 MP
 DP
-gs 899 388 5357 4228 MR c np
+gs 899 388 5357 4228 rc
 gr
 
 0 sg
