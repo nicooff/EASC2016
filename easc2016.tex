@@ -519,17 +519,17 @@ it is expected that Beskow will not scale as well as the two others.
 
 \begin{figure}
   \centering
-  \subfigure[Ping-pong on Beskow]{
-  \includegraphics[width=\linewidth]{./figures/pingpong_beskow.png}
-  \label{fig:pingpong_beskow}
+  \subfigure[Ping-pong and all-reduce on Mira as illustrated in \cite{fischer:scaling}]{
+  \includegraphics[width=\linewidth]{./figures/pingpong_mira.png}
+  \label{fig:pingpong_mira}
   }
   \subfigure[Ping-pong on Titan]{
   \includegraphics[width=\linewidth]{./figures/pingpong_titan.png}
   \label{fig:pingpong_titan}
   }
-  \subfigure[Ping-pong and all-reduce on Mira as illustrated in \cite{fischer:scaling}]{
-  \includegraphics[width=\linewidth]{./figures/pingpong_mira.png}
-  \label{fig:pingpong_mira}
+  \subfigure[Ping-pong on Beskow]{
+  \includegraphics[width=\linewidth]{./figures/pingpong_beskow.png}
+  \label{fig:pingpong_beskow}
   }
   \caption{Latency and Bandwidth Tests on Mira}
   \label{fig:pingpong}
@@ -697,26 +697,6 @@ where $P_1$ is the lowest processor count possible for the given problem size. I
 \begin{figure}
   \centering
   \subfigure[$Re_{\tau} = 180$]{
-  \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau180.eps}
-  }
-  \subfigure[$Re_{\tau} = 360$]{
-  \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau360.eps}
-  }
-  \subfigure[$Re_{\tau} = 550$]{
-  \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau550.eps}
-  }
-  \subfigure[$Re_{\tau} = 1000$]{
-  \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau1000.eps}
-  }
-\caption{Beskow: AMG ({\color{blue}blue}), XXT ({\color{red}red}), communication (dashed),
-  computation (single),  total time ($\square$), computational linear scaling
-  ({\color{green}green})}
-\label{fig:scaling_beskow}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \subfigure[$Re_{\tau} = 180$]{
   \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/titan/TitanReTau180.eps}
   }
   \subfigure[$Re_{\tau} = 360$]{
@@ -734,6 +714,25 @@ where $P_1$ is the lowest processor count possible for the given problem size. I
 \label{fig:scaling_titan}
 \end{figure}
 
+\begin{figure}
+  \centering
+  \subfigure[$Re_{\tau} = 180$]{
+  \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau180.eps}
+  }
+  \subfigure[$Re_{\tau} = 360$]{
+  \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau360.eps}
+  }
+  \subfigure[$Re_{\tau} = 550$]{
+  \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau550.eps}
+  }
+  \subfigure[$Re_{\tau} = 1000$]{
+  \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau1000.eps}
+  }
+\caption{Beskow: AMG ({\color{blue}blue}), XXT ({\color{red}red}), communication (dashed),
+  computation (single),  total time ($\square$), computational linear scaling
+  ({\color{green}green})}
+\label{fig:scaling_beskow}
+\end{figure}
 
 
 %\subsection{Weak and Strong Scaling}
@@ -757,18 +756,18 @@ and the communication time. For the given intersection point we can identify the
     AMG&5040&5578&6200&9750\\
     \hline
     \hline
-    {\bf Beskow}
-    &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
-    \hline
-    XXT&45700&19200&26000& - \\
-    AMG&24800&33000&48000& - \\
-    \hline
-    \hline
     {\bf Titan}
     &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
     \hline
     XXT&9000&24000&65000&228000\\
     AMG&11000&36000&68000&132000\\
+    \hline
+    \hline
+    {\bf Beskow}
+    &$Re_{\tau} 180$&$Re_{\tau} 360$&$Re_{\tau} 550$&$Re_{\tau} 1000$\\
+    \hline
+    XXT&45700&19200&26000& - \\
+    AMG&24800&33000&48000& - \\
     \hline
     \hline
   \end{tabular}
@@ -835,7 +834,7 @@ algorithms in Nek5000 should yield little computational overhead due to the halo
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/cachearrow.eps}
-  \caption{Cache misses on Mira for all 4 test cases(low to high degrees of freedom in direction of the arrow) The dashed red line: L1 cache size}
+  \caption{Cache misses on Mira for all 4 test cases (low to high degrees of freedom in direction of the arrow) The dashed red line: L1 cache size}
    \label{fig:cachemisses}
 \end{figure}
 
@@ -863,20 +862,38 @@ reason for super linearity is similar as for Mira.
 \subsection{Comparison between XXT and AMG}
 % XXT AMG comparison
 
+For smaller problem sizes ($Re_{\tau}=180$), XXT slightly outperforms AMG on all machines
+for a large number of cores, after the strong scaling limit has been reached. 
+For this case, computation time is almost unaffected by the method while and the better perfomance
+of XXT is attributed to a lower communication. For the cases $Re_{\tau}=360$ and 
+$550$ on Mira and Beskow, compute time is noticeably lower for AMG than XXT by
+about a factor $5-10\%$. For $Re_{\tau}=550$ on Mira, computation time is also lower
+for AMG. This leads to the clear conclusion that AMG for that case on that computer
+is systematically better by about $10\%$. However, no such incisive conclusion can be drawn for the other
+cases because of varying communication times. For $Re_{\tau}=1000$ on Beskow, 
+AMG is once again faster in terms of computation and communication time, but the 
+gain is hardly a few percents and we are still far from the strong scaling limit.
+On Titan, the difference between AMG and XXT is marginal even if AMG seems overall
+slightly slower.
+%However from 200k elements onwards for Mira
+%($Re_{\tau}=360$ and $550$) AMG takes the lead, surpassing XXT in time to solution, although it has a %much 
+%lower strong scaling limit. This difference between both coarse grid solvers is 
+%marginal on Titan and visible on Beskow for $Re_{\tau} = 
+%550$ and $1000$ without being as pronounced as on Mira. 
 
-For smaller problem sizes ($Re_{\tau}=180$) XXT slightly outperforms AMG. 
-However from 200k elements onwards for Mira
-($Re_{\tau}=360$ and $550$) AMG takes the lead, surpassing XXT in time to solution, although it has a %much 
-lower strong scaling limit. This difference between both coarse grid solvers is 
-marginal on Titan and visible on Beskow for $Re_{\tau} = 
-550$ and $1000$ without being as pronounced as on Mira. 
+Interesting data are the total number of MPI calls and associated message length
+for both methods. In \reftab{tab:xxtamg} we compare XXT and AMG on $Re_{\tau} = 550$ 
+at the strong scaling limit of AMG (4096 nodes). The amount of data communicated 
+by XXT is by an order of magnitude higher, while AMG uses twice as many MPI calls. 
+Therefore, AMG should leap ahead if the systems rely on a low latency network 
+combined with a high element count.
 
-However, we can claim that using AMG on these
-machines is never detrimental with regard to time to solution, and AMG generally leaps ahead if the
-systems rely on a low latency network combined with a high element count. In
-\reftab{tab:xxtamg} we compare XXT and AMG on $Re_{\tau} = 550$ at the strong
-scaling limit of AMG (4096 nodes). The amount of data communicated by XXT is by
-an order of magnitude higher, while AMG uses twice as many MPI calls. 
+%However, we can claim that using AMG on these
+%machines is never detrimental with regard to time to solution, and AMG generally leaps ahead if the
+%systems rely on a low latency network combined with a high element count. In
+%\reftab{tab:xxtamg} we compare XXT and AMG on $Re_{\tau} = 550$ at the strong
+%scaling limit of AMG (4096 nodes). The amount of data communicated by XXT is by
+%an order of magnitude higher, while AMG uses twice as many MPI calls. 
 \begin{table}
 \caption{Number of MPI calls and data communicated on $P=131,072$ at $Re_{\tau}=
 550$}
