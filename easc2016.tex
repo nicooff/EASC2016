@@ -678,7 +678,11 @@ where $P_1$ is the lowest processor count possible for the given problem size. I
   \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/mira/MiraReTau1000.eps}
   }
   \caption{BG/Q Mira times: AMG ({\color{blue}blue}), XXT ({\color{red}red}), communication (dashed),
+<<<<<<< HEAD
   computation (single), total time ($\square$), computational linear scaling
+=======
+  computation (single), total (ticked), computational linear scaling
+>>>>>>> 9d2b7372f949f7e5febb279eee4b4c86550d74e4
   ({\color{green}green})}
   \label{fig:scaling_mira}
 \end{figure}
@@ -698,7 +702,11 @@ where $P_1$ is the lowest processor count possible for the given problem size. I
   \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau180.eps}
   }
 \caption{Beskow: AMG ({\color{blue}blue}), XXT ({\color{red}red}), communication (dashed),
+<<<<<<< HEAD
   computation (single),  total time ($\square$), computational linear scaling
+=======
+  computation (single), total (ticked), computational linear scaling
+>>>>>>> 9d2b7372f949f7e5febb279eee4b4c86550d74e4
   ({\color{green}green})}
 \label{fig:scaling_beskow}
 \end{figure}
@@ -718,7 +726,11 @@ where $P_1$ is the lowest processor count possible for the given problem size. I
   \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/titan/TitanReTau180.eps}
   }
 \caption{Titan: AMG ({\color{blue}blue}), XXT ({\color{red}red}), communication (dashed),
+<<<<<<< HEAD
   computation (single),  total time ($\square$), computational linear scaling
+=======
+  computation (single), total (ticked), computational linear scaling
+>>>>>>> 9d2b7372f949f7e5febb279eee4b4c86550d74e4
   ({\color{green}green})}
 \label{fig:scaling_titan}
 \end{figure}
@@ -919,7 +931,8 @@ all-reduce (see \reffig{fig:pingpong}). Across the four test cases we can observ
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/weak.png}
-  \caption{Weak Scaling}
+  \caption{Weak Scaling: For a fixed $\frac{N}{P}$, the same runtime is
+  observed across the four test cases.}
   \label{fig:weakscaling}
 \end{figure}
 
