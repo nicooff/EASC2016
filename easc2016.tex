@@ -625,7 +625,8 @@ misses are only measured on Mira via the HPM profiling library.
 We want in particular to verify
 experimentally the strong scaling limit for a given problem of size $N$. 
 In this paper, the strong scaling limit for a problem of size $N$ is defined
-as the minimal number of grid points per process $\frac{N}{P}$ by finding $P$ such that
+as the minimal number of grid points per process $\frac{N}{P}$ by finding $P$,
+the number of processes, such that
 
 \begin{equation}
   \dfrac{T_a(N,P)}{T_c(N,P)}=1,\mbox{ for problem size }N.
@@ -649,20 +650,34 @@ scaling behavior of Nek. This should allow potential users to estimate and
 compare the scaling of Nek to other CFD software.
 Our test case is run in four different regimes at 4 different problem sizes called
 $Re_{\tau} = 180$, $360$, $550$ and $1000$ described more in
-detail in \refsec{sec:pipe}.
+detail in \refsec{sec:pipe}. These cases were run with various processor counts 
+on three systems. The lower bound of the processor count is dictated by the size 
+of the Random Access Memory (RAM) of each machine, i.e. the smallest number of 
+nodes on which the problem can be packed. Nek5000 has roughly a memory requirement of 500 fields 
+times the number of degrees of freedom. The upper bound was either set by the
+administrative limit of getting access to the maximum number of processors
+(Beskow and Titan) or by the algorithmic limit of having at least one element 
+per process, since as noted in \refsec{sec:code}, the smallest parallelizable 
+unit in Nek5000 is one spectral element. Of the 20 timesteps along which the
+ statistics are taken we have chosen the minimal communication time reported per
+ timestep\footnote{different on all machines?}. 
+
+In \cite{fischer:scaling} the strong scaling limit \refeqn{eq:strong} was estimated
+ to be around $\frac{N}{P}=2000$ for the conjugate gradient (CG) and $20000$ or 
+$7000$ (BG/Q) for the algebraic multigrid (AMG). However Nek5000 gathers several 
+different algebraic solvers each with its own customized preconditioning strategy
+ (CG with Jacobi preconditioning for velocity, GMRES with XXT and AMG preconditioning for pressure). 
+Taking also the added computational effort from projections, right hand side 
+evaluations and the heavy communication of the coarse grid solver our values are 
+thrown off slightly from the theoretical results in \cite{fischer:scaling}. Despite
+ the highest of ambitions it is rather unfeasible in practice to time accurately
+ all the components that contribute at performing a single timestep without 
+encountering a lot of noise.  Therefore the timings performed here do not penetrate 
+the computation deeper than the level one timestep.
 
 \section{Results}
 
-Our four test cases were run with various processor counts on three systems. The lower bound of the processor count is dictated by the size of the Random Access Memory (RAM) of each machine, i.e. the smallest number of nodes on which the problem can be packed. Nek5000 has roughly a memory requirement of 500 fields 
-times the number of degrees of freedom. The upper bound was either set by the
-administrative limit of getting access to the maximum number of processors
-(Beskow and Titan) or by the algorithmic limit of having at least one element per process, since as noted in \refsec{sec:code}, the smallest parallelizable unit in Nek5000 is one spectral element. 
-Of the 20 timesteps along which the statistics are taken we have chosen the minimal communication time reported per timestep\footnote{different on all machines?}. 
-
-In \cite{fischer:scaling} the strong scaling limit \refeqn{eq:strong} was estimated to be around $\frac{N}{P}=2000$ for the conjugate gradient (CG) and $20000$ or $7000$ (BG/Q) for the algebraic multigrid (AMG). However Nek5000 gathers several different algebraic solvers each with its own customized preconditioning strategy (CG with Jacobi preconditioning for velocity, GMRES with XXT and AMG preconditioning for pressure). 
-Taking also the added computational effort from projections, right hand side evaluations and the heavy communication of the coarse grid solver our values are thrown off slightly from the theoretical results in \cite{fischer:scaling}. Despite the highest of ambitions it is rather unfeasible in practice to time accurately all the components that contribute at performing a single timestep without encountering a lot of noise.  Therefore the timings performed here do not penetrate the computation deeper than the level one timestep.
-
-\subsubsection*{Scaling analysis}
+%\subsubsection*{Scaling analysis}
 
 The core of the present analysis relies on the data in \reffig{fig:scaling_mira}, \reffig{fig:scaling_beskow} and \reffig{fig:scaling_titan} for each one of the three machines discussed here. 
 The compute time and
@@ -672,7 +687,7 @@ compute time, the optimal linear scaling line of the compute time was added, i.e
 $$
 T_{ideal}(N,P)=\frac{T(N,P_1)P_1}{P}
 $$
-where $P_1$ is the lowest processor count possible for the given problem size. It is noteworthy that we do not compare to linear scaling of the total time as we operate in the strong scaling limit regime, where parallel efficiency is supposed to be well below unity.
+where $P_1$ is the lowest process count possible for the given problem size. It is noteworthy that we do not compare to linear scaling of the total time as we operate in the strong scaling limit regime, where parallel efficiency is supposed to be well below unity.
 
 \begin{figure}
   \centering
