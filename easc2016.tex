@@ -196,8 +196,15 @@ and Maxwell Hutchinson
 
 \maketitle
 \begin{abstract}
-The present work is targeted at performing a strong scaling and benchmarking study of the high-order spectral element fluid dynamics solver Nek5000.  Prior studies such as \cite{fischer:scaling} indicated a recommandable metric for strong scalability from a theoretical viewpoint, which we test here extensively on three parallel machines with different performance characteristics. The test cases considered for the simulations correspond to a turbulent flow in a straight pipe at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. Results on various machines with various architectures and interconnect networks, namely Mira (IBM Blue Gene/Q), Beskow (Cray XC40) and Titan (Cray XK7) are studied.  Considering the linear model for parallel communication we quantify the machine characteristics in order to better assess the scaling behaviors of the code. Subsequently the main blocks of the code are timed to obtain computation cost while sampling and profiling tools are used to measure the communication time over a large range of compute cores.
-We also study the effect of the two coarse grid solvers XXT and AMG on the computational time. Super linear scaling due to a reduction in cache misses is observed on each computer. The strong scaling limit is attained for roughly $5000-10,000$ degrees of freedom per core on Mira, $30,000-50,0000$ on Beskow, with only a small impact of the problem size for both machines, and ranges between $10,000$ and $220,000$ depending on the problem size on Titan. This work aims at being a reference for Nek5000 users and also serve as a basis for potential issues to adress as the community heads towards exascale supercomputers.
+The present work is targeted at performing a strong scaling study of the high-order spectral element fluid dynamics solver Nek5000.  Prior studies such as \cite{fischer:scaling} indicated a recommendable metric for strong scalability from a theoretical viewpoint, which we test here extensively on three parallel machines with different performance characteristics. The test cases considered for the simulations correspond to a turbulent flow in a straight pipe at four different friction Reynolds numbers $Re_{\tau} = 180$, $360$, $550$ and $1000$. Results on various machines with various architectures and interconnect networks, namely Mira (IBM Blue Gene/Q), Beskow (Cray XC40) and Titan (Cray XK7) are studied.  Considering the linear model for parallel communication we quantify the machine characteristics in order to better assess the scaling behaviors of the code. Subsequently the main blocks of the code are timed to obtain computation cost while sampling and profiling tools are used to measure the communication time over a large range of compute cores.
+We also study the effect of the two coarse grid solvers XXT and AMG on the
+computational time. Super linear scaling due to a reduction in cache misses is
+observed on each computer. The strong scaling limit is attained for roughly
+$5000-10,000$ degrees of freedom per core on Mira, $30,000-50,0000$ on Beskow,
+with only a small impact of the problem size for both machines, and ranges
+between $10,000$ and $220,000$ depending on the problem size on Titan. This work
+aims at being a reference for Nek5000 users and also serve as a basis for
+potential issues to address as the community heads towards exascale supercomputers.
 \end{abstract}
 
 
@@ -251,15 +258,35 @@ We also study the effect of the two coarse grid solvers XXT and AMG on the compu
 \keywords{Nek5000; Scaling; Benchmarking}
 
 \section{Introduction}
-The development of highly scalable codes that perform well on different architectures has been a daunting task ever since the advent of High Performance Computing, due to the interplay between computation and communication, inescapable global operations but foremost due to the nature of this research field constantly redefining its path. In the current work we explore the paralellism of Nek5000, which is one of the oldest legacy codes (celebrating 30 years this year) and thus has experienced many trends and changes in high performance computing strategies.
+The development of highly scalable codes that perform well on different
+architectures has been a daunting task ever since the advent of High Performance
+Computing, due to the interplay between computation and communication,
+inescapable global operations but foremost due to the nature of this research
+field constantly redefining its path. In the current work we explore the parallelism of Nek5000, which is one of the oldest legacy codes (celebrating 30 years this year) and thus has experienced many trends and changes in high performance computing strategies.
 
-Nek5000 is a spectral element, thermal hydraulics code which performs best on complex geometries, wall bounded problems (although it can handle any type of boundary condition), at large scales on any commonly used parallel computer architecture. The present study is aimed at providing users a handle on parameter choices for performance and scalability, and relies on previous work , such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark the code on a canonical flow case, a Direct Numerical Simulation case of incompressible flow in a pipe at increasingly high Reynolds numbers \cite{Khoury2013}. As commonly known solving the Poisson equation for the pressure is the most challenging computational part of an incompressible flow solver. Nek5000 relies on a domain decomposition approach to solving the Poisson subproblem, where the coarse grid solver is precondioned either via XXT \cite{Tufo2001151} or AMG (ref report James). We explore both approaches and quantify the regimes in which either of them is recommendable. Subsequently we indentify the strong scaling limit on various flow configurations and machines. For a more complete interpretation of the results we assess also load balancing, mesh partitioning, chache misses etc. 
+Nek5000 is a spectral element, thermal hydraulics code which performs best on
+complex geometries, wall bounded problems (although it can handle any type of
+boundary condition), at large scales on any commonly used parallel computer
+architecture. The present study is aimed at providing users a handle on
+parameter choices for performance and scalability, and relies on previous work ,
+such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark
+the code on a canonical flow case, a Direct Numerical Simulation case of
+incompressible flow in a pipe at increasingly high Reynolds numbers
+\cite{Khoury2013}. As commonly known solving the Poisson equation for the
+pressure is the most challenging computational part of an incompressible flow
+solver. Nek5000 relies on a domain decomposition approach to solving the Poisson
+subproblem, where the coarse grid solver is preconditioned either via XXT \cite{Tufo2001151} or AMG (ref report James). We explore both approaches and quantify the regimes in which either of them is recommendable. Subsequently we identify the strong scaling limit on various flow configurations and machines. For a more complete interpretation of the results we assess also load balancing, mesh partitioning, cache misses etc. 
 
 \section{Code description}
-Nek5000 supports a wide set of options that speed up the time to solution, such as the method of characteristics which decouples the pressure solve from the restrictive CFL condition for the nonlinear advection operator, or orthogonal projections of the solution to reduce the iteration count of the algebraic solver etc. Here we focus only one track to solution which is consistent with the physical case we study and the way it was intially performed, i.e. Direct Numerical Simulation of pipe flow \cite{Khoury2013}.
+Nek5000 supports a wide set of options that speed up the time to solution, such
+as the method of characteristics which decouples the pressure solve from the
+restrictive CFL condition for the nonlinear advection operator, or orthogonal
+projections of the solution to reduce the iteration count of the algebraic
+solver etc. Here we focus only one track to solution which is consistent with
+the physical case we study and the way it was initially performed, i.e. Direct Numerical Simulation of pipe flow \cite{Khoury2013}.
 
 \subsection{Numerical method}
-There are two main solvers available within Nek5000 for computing the solution of incompressible Navier-Stokes, and of these one is also ammenable to non-divergence free flows, as available in \cite{Tomboulides1997}. Although we operate in the incompressible regime we picked this solver to preserve generality. The incompressible Navier-Stokes are given here
+There are two main solvers available within Nek5000 for computing the solution of incompressible Navier-Stokes, and of these one is also amenable to non-divergence free flows, as available in \cite{Tomboulides1997}. Although we operate in the incompressible regime we picked this solver to preserve generality. The incompressible Navier-Stokes are given here
 %As a fractional step solver the following equations
 \begin{align} 
  \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u \cdot \nabla}) \mathbf{u} & = - \nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} + \mathbf{f} \label{eqn:NS_momentum},\\
@@ -267,7 +294,9 @@ There are two main solvers available within Nek5000 for computing the solution o
 \end{align}
 where $\mathbf{u}$ is the velocity and $p$ the pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations \refeqn{eqn:NS_momentum}  and \refeqn{eqn:NS_continuity} are called the continuity and momentum equations respectively. 
 
-The momentum equation is time integrated via an Implicit-Explicit scheme, also known as BDFk-EXTk (Backward DiFferences and EXTrapolation of order k). We illustrate it semidiscretely
+The momentum equation is time integrated via an Implicit-Explicit scheme, also
+known as BDFk-EXTk (Backward DiFferences and EXTrapolation of order k). We
+illustrate it semi-discretely
 
 \begin{eqnarray}
 \sum\limits_{j=0}^k \frac{b_j}{\Delta t} \mathbf u^{n-j}  = - \nabla p^{n}+\frac{1}{Re}\nabla^2\mathbf u^{n}+\underbrace{\sum\limits_{j=1}^k a_j [N(\mathbf u^{n-j})+\mathbf f^{n}]}_{\mathbf{F}_n(\mathbf u,\mathbf f)}.\label{eqn:discrete}
@@ -311,7 +340,10 @@ In a similar way, Equation \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the
 
 \subsubsection{Mesh and mapping}
 \label{sec:code}
-The geometry is meshed using hexahedral elements, partioned for parallel computation using a spectral bisection algorithm as implemented in "genmap" which accompanies the code Nek5000 \cite{argonne:nekdoc}. An example of the partioning for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffig{fig:partition_vis}, where each element is colored according to the MPI rank it belongs to. We note that partition is done at the element level and not further.
+The geometry is meshed using hexahedral elements, partitioned for parallel
+computation using a spectral bisection algorithm as implemented in "genmap"
+which accompanies the code Nek5000 \cite{argonne:nekdoc}. An example of the
+partitioning for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffig{fig:partition_vis}, where each element is colored according to the MPI rank it belongs to. We note that partition is done at the element level and not further.
 \begin{figure}
   \centering
   \subfigure[Partition]{
@@ -329,8 +361,9 @@ The geometry is meshed using hexahedral elements, partioned for parallel computa
 \subsubsection{Code structure}
 \label{sec:code}
 
-The sequence of operations leading to the solution of incompressible Navier-Stoke is summed up algortihmically in \refalg{alg:code_struct}.  
-Firts of all note that both \refeqn{eqn:hmhz_pres} and \refeqn{eqn:hmhz_vel} can be summed up in discrete form as
+The sequence of operations leading to the solution of incompressible
+Navier-Stoke is summed up algorithmically in \refalg{alg:code_struct}.  
+First of all, note that both \refeqn{eqn:hmhz_pres} and \refeqn{eqn:hmhz_vel} can be summed up in discrete form as
 $$Hu=(h_1 A+h_2 B)[u]$$
 Different choices for the factors $h_1$ and $h_2$ yield either the Poisson equation, or the Helmholtz equation
 \begin{eqnarray}
@@ -437,7 +470,7 @@ Beskow & $2.55$ & $8.25\cdot 10^{-4}$ & $1.5 \cdot 10^{-4}$ &$17000$ & $5.5$ \\ 
 \label{tab:alpha_beta}
 \end{table}
 
-In order to assess the perfomance of the machines at hand, we computed  some of the network characteristics that determine the communication. In particular Beskow, which is a relatively new machine, had no such parameters provided to users. 
+In order to assess the performance of the machines at hand, we computed  some of the network characteristics that determine the communication. In particular Beskow, which is a relatively new machine, had no such parameters provided to users. 
 The performance study conducted here relies on the linear interprocessor communication  model
 \begin{equation}
  t_c(m) = (\alpha + \beta m) t_a,\label{eqn:lincomm}
@@ -495,7 +528,12 @@ it is expected that Beskow will not scale as well as the two others.
 
 \subsection{Code instrumentation for profiling}
 \label{sec:timers}
-Our strategy for timing the code execution is twofold. We use both MPI timers for the wall clock time and profiling libraries tailored to the machine architecture to induce the least overhead in communication. Both the timers and profilers are set to start counting after the intial setup stage is completed, in our case after timestep 30, lasting for an extra 20 timesteps. The intial stage is meant to allow for the higher order restart, proper intialization of the projection space (i.e. the size of the projection space $X$ is $L=5$, thus requiring 5 consecutive soltuions).
+Our strategy for timing the code execution is twofold. We use both MPI timers
+for the wall clock time and profiling libraries tailored to the machine
+architecture to induce the least overhead in communication. Both the timers and
+profilers are set to start counting after the initial setup stage is completed,
+in our case after timestep 30, lasting for an extra 20 timesteps. The initial
+stage is meant to allow for the higher order restart, proper initialization of the projection space (i.e. the size of the projection space $X$ is $L=5$, thus requiring 5 consecutive soltuions).
  
 \paragraph{MPI Timers}
 The timers are distributed in the code according to \ref{alg:code_struct}. Each one of them measures the wall
@@ -503,7 +541,8 @@ clock time using the MPI timer ({\tt MPI\_Wtime}) followed by a barrier
 ({\tt MPI\_Barrier}) guaranteeing coherent and synchronized measurements. We also performed a reference run without synchronization and timers to evaluate the overhead due to profiling. In all instances this was far
 below 5\%. 
 
-Following \ref{alg:code_struct} the main timer ($ttotal$) measures the total time spent in the outer timestepping loop for the last 20 timesteps. Additinal timers for the computational cost of the right hand side Equation.~\refeqn{eqn:hmhz_pres} ($trhsp$), and of the right hand side of Equation.~\refeqn{eqn:hmhz_vel} ($trhsv$). We also time all the different projections separately, using two timers for both the pressure and velocity: one timer for projecting the residuals before the Helmholtz solve ($tprojp1$ and $tprojv1$) and one for updating and projecting the field after the solve ($tprojp2$ and $tprojv2$), this second projection step also includes the time to update the subspaces. The time spent in the Helmholtz solves is measured for pressure as well as velocity ($thmhp$ and $thmhv$). Within the pressure solver, a timer wraps around the coarse grid solve ($tcoarse$) since we know that this particular section is bound by communication. Finally, we gather in an additional timer most of the remaining computations such that our timers account for more that 95\% of the total time. 
+Following \ref{alg:code_struct} the main timer ($ttotal$) measures the total
+time spent in the outer timestepping loop for the last 20 timesteps. Additional timers for the computational cost of the right hand side Equation.~\refeqn{eqn:hmhz_pres} ($trhsp$), and of the right hand side of Equation.~\refeqn{eqn:hmhz_vel} ($trhsv$). We also time all the different projections separately, using two timers for both the pressure and velocity: one timer for projecting the residuals before the Helmholtz solve ($tprojp1$ and $tprojv1$) and one for updating and projecting the field after the solve ($tprojp2$ and $tprojv2$), this second projection step also includes the time to update the subspaces. The time spent in the Helmholtz solves is measured for pressure as well as velocity ($thmhp$ and $thmhv$). Within the pressure solver, a timer wraps around the coarse grid solve ($tcoarse$) since we know that this particular section is bound by communication. Finally, we gather in an additional timer most of the remaining computations such that our timers account for more that 95\% of the total time. 
 %We learn from these timers that the projections are in most cases the most time consuming functions, followed by the Helmholtz solves. 
 
 Since these timers do not provide information about the distribution between time spent in computation and communication, which is the core element when assessing scalability and efficiency of a parallel code we shall not focus further on them. Instead we investigate in detail  the timings produced by more adapted sampling and profiling tools.
@@ -512,7 +551,7 @@ In order to measure the time spent in communication we relied on Craypat for
 Beskow and Titan and on Hardware Performance Monitor (HPM) for Mira. Both tools
 allow us to measure the total time spent in communication during the targeted 20 time
 steps. HPM gives additional information on the cache misses and the load
-imbalance. The CrayPat performance analysis framework is used to sample the code during execution at a default frequency of $\unit[100]{Hz}$ and reports in which function each sample was taken. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. The sampling procedure ensures a very low overhead. We also tested the profiling procedure, where all function calls are tracked, available with Craypat but overhead in time was about $50\%$ and the method was abandoned.
+imbalance. The CrayPat performance analysis framework is used to sample the code during execution at a default frequency of $\unit[100]{Hz}$ and reports in which function each sample was taken. Then, we assume that the proportion of the total time spent in a given function is equal to the proportion of samples within this function. The sampling procedure ensures a very low overhead. We also tested the profiling procedure, where all function calls are traced, available with Craypat but overhead in time was about $50\%$ and the method was abandoned.
 \subsection{Test Case: pipe flow}
 \label{sec:pipe}
 
@@ -923,7 +962,9 @@ implementations. Our results point at the regimes under which to chose AMG or
 XXT; AMG for low latency and high element count, XXT for high latency, high
 bandwidth and low element count. Our model failed to explain the difference in
 the strong scaling limit between Titan and Mira. A model that would include a
-quantity for the network noise would improve our prediction on noisy systems. 
+quantity for the network noise would improve our prediction on noisy systems.
+We confirmed that a synchronized and low latency global communication remains
+crucial for strong scaling of a spectral element based CFD solver.
 
 %ACKNOWLEDGMENTS are optional
 \section{Acknowledgments}
