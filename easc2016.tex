@@ -317,6 +317,7 @@ the physical case we study and the way it was initially performed, i.e. fully
 resolved DNS of a turbulent pipe flow \cite{Khoury2013}.
 
 \subsection{Numerical method}
+\label{sec:method}
 The incompressible Navier--Stokes equations are given here by
 %As a fractional step solver the following equations
 \begin{align} 
@@ -1071,7 +1072,7 @@ mainly dependent on the ratio $\frac{N}{P}$.
   \label{fig:projections}
 \end{figure}
 \subsection{Time to solution}
-Although we focus on parallelism and performance across a high number of processes the most important feature of a CFD code in practice remains the ability to minimize the time to solution. The parallelsim is not the sole contributor to fast time to solution, but also secondary strategies such as projections mentioned in %\refsec{sec:}
+Although we focus on parallelism and performance across a high number of processes the most important feature of a CFD code remains, in practice, the ability to minimize the time to solution. The parallelsim is not the sole contributor to fast time to solution, but also secondary strategies such as projections mentioned in \refsec{sec:method}. Here we assessed a recent upgraded implementation of the projections scheme, see \reffig{fig:projections}, where we note that the number of iterations per solve decreases around 3.5 times as we increase the projections space $L$. Compared to the reported results in \cite{Fischer1998} an improved reusability of the projection space data eliminates the spikes in convergence.
 
 
 \section{Conclusion}
