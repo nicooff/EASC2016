@@ -48,8 +48,8 @@
 \newcommand{\refsec}[1]{Sect.~\ref{#1}}
 \newcommand{\reffig}[1]{Fig.~\ref{#1}}
 \newcommand{\refsubfig}[1]{Fig.~\subref{#1}}
-\newcommand{\reftab}[1]{Table~\ref{#1}}
-\newcommand{\refeqn}[1]{(\ref{#1})}
+\newcommand{\reftab}[1]{Tab.~\ref{#1}}
+\newcommand{\refeqn}[1]{Eq.~(\ref{#1})}
 \newcommand{\reflst}[1]{Listing~(\ref{#1})}
 \newcommand{\bigo}[1]{\mathcal{O}(#1)}
 
@@ -326,15 +326,9 @@ The incompressible Navier--Stokes equations are given here by
 \end{align}
 where $\mathbf{u}$ is the velocity and $p$ the pressure. The Reynolds number 
 $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$,
-<<<<<<< HEAD
 length scale $L$ and kinematic viscosity $\nu$. \refeqn{eqn:NS_momentum} 
 and \refeqn{eqn:NS_continuity} are called the continuity and momentum equations 
 respectively. There are two main solvers, called PNPN and PNPN-2, available within 
-=======
-length scale $L$ and kinematic viscosity $\nu$. equations~\refeqn{eqn:NS_momentum} 
-and~\refeqn{eqn:NS_continuity} are called the continuity and momentum equations 
-respectively. There are two main solvers, called $\mathbb{P}_N-\mathbb{P}_N$ and $\mathbb{P}_N-\mathbb{P}_{N-2}$, available within 
->>>>>>> 6303449e157825655c88e1ca137d2aa9e4b74fc0
 Nek5000 for computing the solution of the incompressible 
 Navier-Stokes equations, and of these one is also amenable to non-divergence free 
 flows, as available in \cite{Tomboulides1997}, namely $\mathbb{P}_N-\mathbb{P}_N$. Although we operate in the incompressible
@@ -358,7 +352,7 @@ Ignoring boundary conditions and other numerical technicalities available in \ci
 As it can be observed, solving the incompressible Navier-Stokes equations is reduced 
 to the evaluation of $\mathbf{F}_n$ in \refeqn{eqn:discrete}, followed by one Poisson 
 equation and a Helmholtz equation thereafter for each velocity component (2 in 2D and 3 in 3D). 
-equation \refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main 
+\refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main 
 source of stiffness and its efficient resolution by an iterative solver is preceded 
 by two steps. First of all, the pressure at each time step is projected onto a 
 subspace of previous solutions, and as described in \cite{Fischer1998} has been shown 
@@ -381,7 +375,7 @@ a coarsening and an interpolation operation on a predefined number of coarse gri
 levels. 
 
 Finally, the pressure equation is solved with the generalized minimal residual 
-method (GMRES). equation~\refeqn{eqn:hmhz_vel}, the Helmholtz equation for the 
+method (GMRES). \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the 
 velocity components, is solved using the conjugate gradients (CG) iterative solver with a simple Jacobi preconditioner.
 % \begin{align}
 %  \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
@@ -426,7 +420,7 @@ partitioning for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffi
 \label{sec:code}
 
 The sequence of operations leading to the solution of the incompressible
-Navier--Stokes  eequations is summed up algorithmically in \refalg{alg:code_struct}.  
+Navier--Stokes equations is summed up algorithmically in \refalg{alg:code_struct}.  
 First of all, note that both \refeqn{eqn:hmhz_pres} and \refeqn{eqn:hmhz_vel} can be summed up in discrete form as
 $$H \phi=(h_1 A+h_2 B)[\phi],$$
 where $A$ is the stiffness matrix stemming from the discretization of the Laplacian and $B$ is the mass matrix. 
@@ -564,7 +558,7 @@ as described in \cite{fischer:scaling}. During this test, the time required to
 send and receive messages of various sizes between 512 processors (default value
 for the test in Nek5000) is measured 
 and subsequently the values of $\alpha$ and $\beta$ are computed as the best fit 
-for the linear model equation~\refeqn{eqn:lincomm}. The value of $t_a$ is determined by 
+for the linear model \refeqn{eqn:lincomm}. The value of $t_a$ is determined by 
 performing a number of matrix-matrix multiplications streamed from memory
 representing the tensor products that are at the core of a spectral element 
 solver \cite{fischer:hom} and accounting for a big part of the solve time 
@@ -739,7 +733,7 @@ time to solution. This is rather an upper bound of the strong scaling
 limit that would in most of our test runs never be observed. For Nek5000 on Mira it has
 little practical meaning to the user, as that limit always implies the usage
 of all of Mira, which is in most cases too costly. Without a cost model,
-equation \refeqn{eq:strong} gives us a much lower and practical bound of the strong
+ \refeqn{eq:strong} gives us a much lower and practical bound of the strong
 scaling limit. If communication takes longer than
 computation, the code is deemed to be at the strong scaling limit where the
 scaling starts diverging significantly from the perfect linear scaling. 
@@ -858,7 +852,7 @@ where $P_1$ is the lowest process count possible for the given problem size. It 
 
 \subsection{Strong scaling limit}
 
-For both XXT and AMG the strong scaling limit, i.e. equation~\refeqn{eq:strong}, can be readily extracted from the plots by examining the intersection of the computation time 
+For both XXT and AMG the strong scaling limit, i.e. \refeqn{eq:strong}, can be readily extracted from the plots by examining the intersection of the computation time 
 and the communication time. For the given intersection point we can identify the values of $\frac{N}{P}$ through linear interpolation and they are reported them in \reftab{tab:stronglimit}.
 
 \begin{table}  
