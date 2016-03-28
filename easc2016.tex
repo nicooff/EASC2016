@@ -134,7 +134,7 @@
 % 1st. author
 \alignauthor
 Nicolas Offermans\\
-       \affaddr{Linn\'{e} Flow Center}\\
+       \affaddr{Linn\'{e} FLOW Center}\\
        \affaddr{KTH Mechanics, Royal Institute of Technology}\\
        \affaddr{10044 Stockholm, Sweden}\\
        \email{nof@mech.kth.se}
@@ -169,7 +169,7 @@ Paul Fischer\\
 % 5th. author
 \alignauthor 
 Philipp Schlatter\\
-       \affaddr{Linn\'{e} Flow Center}\\
+       \affaddr{Linn\'{e} FLOW Center}\\
        \affaddr{KTH Mechanics, Royal Institute of Technology}\\
        \affaddr{10044 Stockholm, Sweden}\\
        \email{pschlatt@mech.kth.se}
@@ -208,7 +208,7 @@ the code. Subsequently %the main blocks of the code are timed to obtain computat
 sampling and profiling tools are used to measure the computation and communication 
 times over a large range of compute cores.
 We also study the effect of the two coarse grid solvers XXT and AMG on the
-computational time. Super linear scaling due to a reduction in cache misses is
+computational time. Super-linear scaling due to a reduction in cache misses is
 observed on each computer. The strong scaling limit is attained for roughly
 $5000-10,000$ degrees of freedom per core on Mira, $30,000-50,0000$ on Beskow,
 with only a small impact of the problem size for both machines, and ranges
@@ -269,27 +269,28 @@ potential issues to address as the community heads towards exascale supercompute
 
 \section{Introduction}
 The development of highly scalable codes that perform well on different
-architectures has been a daunting task ever since the advent of High Performance
-Computing, due to the interplay between computation and communication,
+architectures has been a daunting task ever since the advent of high performance
+computing, due to the interplay between computation and communication,
 inescapable global operations but foremost due to the nature of this research
 field constantly redefining its path. In the current work we explore the parallelism 
 of Nek5000, which is one of the oldest legacy codes (celebrating 30 years this year) 
 and thus has experienced many trends and changes in high performance computing strategies.
 
-Nek5000 is a spectral element, thermal hydraulics code which performs best on
-complex geometries, wall bounded problems (although it can handle the most common types of
+Nek5000 is a code based on the spectral element method, intended to solve problems
+from thermal hydraulics, which performs best on
+complex geometries, wall-bounded problems (although it can handle the most common types of
 boundary condition), at large scales on any commonly used parallel computer
 architecture. The present study is aimed at providing users a handle on
 parameter choices for performance and scalability, and relies on previous work ,
 such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark
-the code on a canonical flow case, a direct numerical simulation case of
+the code on a canonical flow case, a direct numerical simulation (DNS) of
 incompressible flow in a pipe at increasingly high Reynolds numbers
-\cite{Khoury2013}. Solving the Poisson equation for the
+\cite{Khoury2013}. Solving a Poisson-like equation for the
 pressure is commonly the most challenging computational part of an incompressible flow
 solver. Nek5000 relies on the construction of an efficient preconditioner to solving the Poisson
 subproblem. This preconditioner is obtained by combining a domain decomposition 
 approach and a coarse grid solve being computed either via XXT \cite{Tufo2001151} 
-or AMG\footnote{a reference to James, email him or ask Paul}. We explore both 
+or AMG \cite{LottesAMG}. We explore both 
 approaches and quantify the regimes in which either of them is recommendable. 
 
 In the rest of the paper, we start by giving a short description of the numerical method
@@ -312,22 +313,28 @@ as the method of characteristics which decouples the pressure solve from the
 restrictive CFL condition for the nonlinear advection operator, or orthogonal
 projections of the solution to reduce the iteration count of the algebraic
 solver etc. Here we focus only on one track to solution which is consistent with
-the physical case we study and the way it was initially performed, i.e. direct 
-numerical simulation of pipe flow \cite{Khoury2013}.
+the physical case we study and the way it was initially performed, i.e. fully 
+resiolved DNS of a turbulent pipe flow \cite{Khoury2013}.
 
 \subsection{Numerical method}
-The incompressible Navier-Stokes are given here by
+The incompressible Navier--Stokes equations are given here by
 %As a fractional step solver the following equations
 \begin{align} 
  \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u \cdot \nabla}) \mathbf{u} & = - \nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} + \mathbf{f} \label{eqn:NS_momentum},\\
  \nabla \cdot \mathbf{u} & = 0, \label{eqn:NS_continuity}
 \end{align}
-where $\mathbf{u}$ is the velocity and $p$ the pressure. The Reynolds number $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$, length scale $L$ and kinematic viscosity $\nu$. Equations~\refeqn{eqn:NS_momentum} and~\refeqn{eqn:NS_continuity} are called the continuity and momentum equations respectively. There are two main solvers, called PNPN and PNPN-2, available within Nek5000 for computing the solution of the incompressible 
-Navier-Stokes equations, and of these one is also amenable to non-divergence free flows, as available in \cite{Tomboulides1997}, namely PNPN. Although we operate in the incompressible
+where $\mathbf{u}$ is the velocity and $p$ the pressure. The Reynolds number 
+$Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$,
+length scale $L$ and kinematic viscosity $\nu$. equations~\refeqn{eqn:NS_momentum} 
+and~\refeqn{eqn:NS_continuity} are called the continuity and momentum equations 
+respectively. There are two main solvers, called PNPN and PNPN-2, available within 
+Nek5000 for computing the solution of the incompressible 
+Navier-Stokes equations, and of these one is also amenable to non-divergence free 
+flows, as available in \cite{Tomboulides1997}, namely PNPN. Although we operate in the incompressible
 regime we picked this solver to preserve generality. 
 
 The momentum equation is time integrated via an implicit-explicit scheme, also
-known as BDFk-EXTk (Backward DiFferences and EXTrapolation of order k). We
+known as BDFk-EXTk (Backward Difference formula and EXTrapolation of order k). We
 illustrate it semi-discretely as
 
 \begin{eqnarray}
@@ -344,9 +351,9 @@ Ignoring boundary conditions and other numerical technicalities available in \ci
 As it can be observed, solving the incompressible Navier-Stokes equations is reduced 
 to the evaluation of $\mathbf{F}_n$ in \refeqn{eqn:discrete}, followed by one Poisson 
 equation and a Helmholtz equation thereafter for each velocity component (2 in 2D and 3 in 3D). 
-Equation \refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main 
+equation \refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main 
 source of stiffness and its efficient resolution by an iterative solver is preceded 
-by two steps. First of all, the pressure at each time iteration is projected onto a 
+by two steps. First of all, the pressure at each time step is projected onto a 
 subspace of previous solutions, and as described in \cite{Fischer1998} has been shown 
 to reduce the iteration count by a factor $2.5-5$, which we also verify in \refsec{sec:analysis}.
 Then, a pressure preconditioner is built based on the additive overlapping Schwarz 
@@ -367,7 +374,8 @@ a coarsening and an interpolation operation on a predefined number of coarse gri
 levels. 
 
 Finally, the pressure equation is solved with the generalized minimal residual 
-method (GMRES). Equation~\refeqn{eqn:hmhz_vel}, the Helmholtz equation for the velocity components, is solved using the Conjugate Gradient (CG) iterative solver with a simple Jacobi preconditioner.
+method (GMRES). equation~\refeqn{eqn:hmhz_vel}, the Helmholtz equation for the 
+velocity components, is solved using the conjugate gradients (CG) iterative solver with a simple Jacobi preconditioner.
 % \begin{align}
 %  \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
 %  \mathbf{h}_i^n & = N(\mathbf{u}_i^n) + B \mathbf{f}_i + ???, \label{eqn:rhs}\\
@@ -410,10 +418,10 @@ partitioning for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffi
 \subsubsection{Code structure}
 \label{sec:code}
 
-The sequence of operations leading to the solution of incompressible
-Navier-Stokes is summed up algorithmically in \refalg{alg:code_struct}.  
+The sequence of operations leading to the solution of the incompressible
+Navier--Stokes  eequations is summed up algorithmically in \refalg{alg:code_struct}.  
 First of all, note that both \refeqn{eqn:hmhz_pres} and \refeqn{eqn:hmhz_vel} can be summed up in discrete form as
-$$Hu=(h_1 A+h_2 B)[u],$$
+$$H \phi=(h_1 A+h_2 B)[\phi],$$
 where $A$ is the stiffness matrix stemming from the discretization of the Laplacian and $B$ is the mass matrix. 
 Different choices for the factors $h_1$ and $h_2$ yield either the Poisson equation, or the Helmholtz equation
 \begin{eqnarray}
@@ -434,7 +442,7 @@ for the Helmholtz solver is shown in \refalg{alg:helmholtz}. The Poisson equatio
 the pressure is solved with the GMRES method. The pressure solve also includes the
 computation of the preconditioner based on the Schwarz overlapping method and 
 coarse grid solve, which is not the case for the velocity and constitutes an 
-important part of the work and communication. The Helmholtz equation is solved using the CG method for each componenf of the velocity.
+important part of the work and communication. The Helmholtz equation is solved using the CG method for each component of the velocity.
 \begin{algorithm}
 \begin{algorithmic}
 \Procedure{Solver}{}
@@ -458,7 +466,7 @@ important part of the work and communication. The Helmholtz equation is solved u
 \EndFor
 \EndProcedure
 \end{algorithmic}
-\caption{Main solver}
+\caption{Main solver.}
 \label{alg:code_struct}
 \end{algorithm}
 
@@ -476,7 +484,7 @@ important part of the work and communication. The Helmholtz equation is solved u
 \State \textbf{return} x
 \EndProcedure
 \end{algorithmic}
-\caption{Helmholtz solver}
+\caption{Helmholtz solver.}
 \label{alg:helmholtz}
 \end{algorithm}
 
@@ -506,7 +514,7 @@ Beskow & Cray XC40 & Intel Haswell & $53,632$  & $32$ & DragonFly &1\\
 \label{tab:computer_charac}
 \end{table*}
 The systems vary from small to large petascale and are meant to establish an overview of the Nek5000 scaling. On Mira, Nek5000 achieves its
-peak performance when run with two processes per BG/Q core, being 32 processes
+maximum performance when run with two processes per BG/Q core, being 32 processes
 per node which was noted already in \cite{fischer:scaling}. Although Titan is a
 machine aimed at hybrid parallelism using graphics processing units (GPUs), which
 Nek5000 supports marginally as mentioned in \cite{Otten2016}, no production runs
@@ -517,7 +525,7 @@ process per CPU core was applied to the smallest system Beskow, a Cray XC40.
 
 \begin{table}
 \centering
-\caption{Overview of the latencies and bandwidths.}
+\caption{Overview of the latencies and bandwidths. A word (wd) is 64 bits long.}
 \begin{tabular}{l|ccccc} 
 \hline
 % & Lat. $\alpha^* (\unit[]{\mu s})$ & Inv. band. $\beta^* (\unit[]{\mu s/wd})$ & Inv. flop rate $t_a (\unit[]{\mu s})$ & Non-dim. lat. $\alpha$ & Non-dim.  inv. band. $\beta$ \\
@@ -549,7 +557,7 @@ as described in \cite{fischer:scaling}. During this test, the time required to
 send and receive messages of various sizes between 512 processors (default value
 for the test in Nek) is measured 
 and subsequently the values of $\alpha$ and $\beta$ are computed as the best fit 
-for the linear model Equation~\refeqn{eqn:lincomm}. The value of $t_a$ is determined by 
+for the linear model equation~\refeqn{eqn:lincomm}. The value of $t_a$ is determined by 
 performing a number of matrix-matrix multiplications streamed from memory
 representing the tensor products that are at the core of a spectral element 
 solver \cite{fischer:hom} and accounting for a big part of the solve time 
@@ -589,7 +597,7 @@ it is expected that Beskow will not scale as well as the two others.
   \includegraphics[width=\linewidth]{./figures/pingpong_beskow.png}
   \label{fig:pingpong_beskow}
   }
-  \caption{Latency and Bandwidth Tests on Mira}
+  \caption{Latency and bandwidth tests.}
   \label{fig:pingpong}
 \end{figure}
 
@@ -630,7 +638,7 @@ between the time spent in communication and the time spent in computation for ea
 simulation. These measurements are performed with performance tools adapted to each 
 computer. The tools are set to start counting after the initial setup stage is 
 completed, in our case after timestep 30, lasting for an extra 20 timesteps.  
-The initial stage is meant to allow for the higher order restart, proper initialization 
+The initial stage is meant to allow for the high-order restart, proper initialization 
 of the projection space (i.e.  the size of the projection space $X$ is $L= 5$, thus
 requiring 5 consecutive solutions). In order to measure the time spent in communication 
 we relied on Craypat for
@@ -696,8 +704,8 @@ of
     bandwidth\label{enum:a}, and flops per second of matrix matrix products
     (usually memory bandwidth bound), 
   \item time $T_a$ and $T_c$ spent in computation and communication largely
-    dependent on \ref{enum:a}. and on their respective algorithmic complexities,
-  \item and partitioning.\label{enum:c}
+    dependent on point \ref{enum:a} and on their respective algorithmic complexities,
+  \item partitioning.\label{enum:c}
 \end{enumerate}
 
 The partitioning for our test case (see \refsec{sec:pipe}) is considered to be
@@ -712,30 +720,28 @@ experimentally the strong scaling limit for a given problem of size $N$.
 In this paper, the strong scaling limit for a problem of size $N$ is defined
 as the minimal number of grid points per process $\frac{N}{P}$ by finding $P$,
 the number of processes, such that
-
 \begin{equation}
   \dfrac{T_a(N,P)}{T_c(N,P)}=1,\mbox{ for problem size }N.
   \label{eq:strong}
 \end{equation} 
-
 \noindent Alternatively, the strong scaling limit is commonly described by the
 derivative $\frac{dT}{dP}$ of the
 of the total time $T(N,P)$ being equal to $0$, i.e.\ the point where the runtime
 starts increasing again with increasing $P$. That point represents the fastest
 time to solution. This is rather an upper bound of the strong scaling
-limit that would in most of our test runs never be observed. For Nek on Mira it has
+limit that would in most of our test runs never be observed. For Nek5000 on Mira it has
 little practical meaning to the user, as that limit always implies the usage
 of all of Mira, which is in most cases too costly. Without a cost model,
-\refeqn{eq:strong} gives us a much lower and practical bound of the strong
+equation \refeqn{eq:strong} gives us a much lower and practical bound of the strong
 scaling limit. If communication takes longer than
 computation, the code is deemed to be at the strong scaling limit where the
 scaling starts diverging significantly from the perfect linear scaling. 
 
-The test case used to explore the scaling behavior of Nek is the one of a turbulent 
+The test case used to explore the scaling behavior of Nek5000 is the one of a turbulent 
 flow in a straight pipe, a generic and widely known case across the CFD community.
-This should allow potential users to estimate and compare the scaling of Nek to other CFD software.
-Our test case is run in four different regimes at 4 different problem sizes called
-$Re_{\tau} = 180$, $360$, $550$ and $1000$ described more in
+This should allow potential users to estimate and compare the scaling of Nek5000 to other CFD software.
+Our test case is run in four different regimes at 4 different problem sizes denoted by
+$Re_{\tau} = 180$, $360$, $550$ and $1000$, described more in
 detail in \refsec{sec:pipe}. These cases were run with various processor counts 
 on three systems. The lower bound of the processor count is dictated by the size 
 of the random access memory (RAM) of each machine, i.e. the smallest number of 
@@ -749,7 +755,7 @@ statistics are taken we consider the mean communication time reported over all
 processes. 
 
 In \cite{fischer:scaling} the strong scaling limit \refeqn{eq:strong} was estimated
-to be around $\frac{N}{P}=2000$ for the conjugate gradient (CG) and %$20000$ or 
+to be around $\frac{N}{P}=2000$ for the conjugate gradients (CG) and %$20000$ or 
 $7000$ for the geometric multigrid (MG) on Mira when using finite
 differences. These values are given as an indication %in \reftab{tab:stronglimit} 
 but we remind that Nek5000 is a spectral code and gathers several different algebraic 
@@ -772,7 +778,8 @@ thrown off slightly from the theoretical results in \cite{fischer:scaling}.
 The core of the present analysis relies on the data in \reffig{fig:scaling_mira}, \reffig{fig:scaling_titan} and \reffig{fig:scaling_beskow} for each one of the three machines discussed here. 
 The compute time and
 communication time are illustrated along with the total time for both XXT and AMG across all test cases. 
-Since each independent measurment is taken at powers of $2$ number of processes $P$ the plots are presented in logscale. However, in order to help identify linear scaling of the
+Since each independent measurment is taken at powers of $2$ number of processes $P$ 
+the plots are presented in logarithmic scale. However, in order to help identify linear scaling of the
 compute time, the optimal linear scaling line of the compute time was added, i.e.
 $$
 T_{ideal}(N,P)=\frac{T(N,P_1)P_1}{P}
@@ -794,8 +801,8 @@ where $P_1$ is the lowest process count possible for the given problem size. It 
   \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/mira/MiraReTau1000.eps}
   }
   \caption{Total time for 20 timesteps on BG/Q Mira: AMG ({\color{blue}blue}), XXT ({\color{red}red}), communication (dashed),
-  computation (single), total time ($\square$), computational linear scaling
-  ({\color{green}green})}
+  computation (solid), total time ($\square$), computational linear scaling
+  ({\color{green}green}).}
   \label{fig:scaling_mira}
 \end{figure}
 
@@ -814,8 +821,8 @@ where $P_1$ is the lowest process count possible for the given problem size. It 
   \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/titan/TitanReTau1000.eps}
   }
 \caption{Total mean time for 20 timesteps on Titan: AMG ({\color{blue}blue}), XXT ({\color{red}red}), communication (dashed),
-  computation (single),  total time ($\square$), computational linear scaling
-  ({\color{green}green})}
+  computation (solid),  total time ($\square$), computational linear scaling
+  ({\color{green}green}).}
 \label{fig:scaling_titan}
 \end{figure}
 
@@ -834,8 +841,8 @@ where $P_1$ is the lowest process count possible for the given problem size. It 
   \includegraphics[width=0.85\linewidth,height=0.2\textheight]{./figures/beskow/BeskowReTau1000.eps}
   }
 \caption{Total mean time for 20 timesteps on Beskow: AMG ({\color{blue}blue}), XXT ({\color{red}red}), communication (dashed),
-  computation (single),  total time ($\square$), computational linear scaling
-  ({\color{green}green})}
+  computation (solid),  total time ($\square$), computational linear scaling
+  ({\color{green}green}).}
 \label{fig:scaling_beskow}
 \end{figure}
 
@@ -844,7 +851,7 @@ where $P_1$ is the lowest process count possible for the given problem size. It 
 
 \subsection{Strong scaling limit}
 
-For both XXT and AMG the strong scaling limit, i.e. Equation~\refeqn{eq:strong}, can be readily extracted from the plots by examining the intersection of the computation time 
+For both XXT and AMG the strong scaling limit, i.e. equation~\refeqn{eq:strong}, can be readily extracted from the plots by examining the intersection of the computation time 
 and the communication time. For the given intersection point we can identify the values of $\frac{N}{P}$ through linear interpolation and they are reported them in \reftab{tab:stronglimit}.
 
 \begin{table}  
@@ -893,7 +900,7 @@ anticipated in \cite{fischer:scaling}.
 
 On Beskow, the scalability limit is more difficult to locate with confidence due 
 to the high variance in communication times (see \reffig{fig:pingpong_beskow}), 
-in particular for small cases. Nevertheless we present it as it stems from 
+in particular for small cases. Nevertheless we present it given in 
 \reffig{fig:scaling_beskow}, while keeping in mind that this is the result of a 
 single run and not averaged across several samples. The scalability limit on 
 Beskow is roughly one order of magnitude higher than on Mira in terms of degrees
@@ -910,9 +917,7 @@ On Titan, the scalability limit exhibits a different behavior.
 The strong scaling limit for $\frac{N}{P}$ increases
 significantly with bigger cases as we see from Table \reffig{tab:stronglimit}.
 The limit goes from $\frac{N}{P} \sim 9000$ to $\frac{N}{P} \sim 228000$ across the cases $Re_{\tau}=180$ to $Re_{\tau}=1000$ for XXT. Similarly for AMG $\frac{N}{P}  \sim 11000$ increases sharply to $\frac{N}{P} \sim 132000$ from the smallest case $Re_{\tau}=180$ to 
-$Re_{\tau}=1000$. 
-
-This limitation cannot be fully explained from the non-dimensional latencies and bandwidths from \reftab{tab:alpha_beta}. %, as we do not expect the non-dimensional latency $\alpha$ to have similar values on Titan and Mira. 
+$Re_{\tau}=1000$. This limitation cannot be fully explained from the non-dimensional latencies and bandwidths from \reftab{tab:alpha_beta}. %, as we do not expect the non-dimensional latency $\alpha$ to have similar values on Titan and Mira. 
 %For small cases, i.e. $Re_{\tau} = 180$, where the strong scaling limit depends less on the %machine characteristics the balance between communication and computation is comparable but it deprecates as the problem size increases. 
 
 % First explanation
@@ -934,7 +939,7 @@ $\alpha$ and $\beta$  becomes irrelevant on Titan at a high core count.
 
 
 
-\subsection{Super Linearity}
+\subsection{Super-Linearity}
 % Superlinearity
 
 In theory the computational time should match exactly the linear scaling
@@ -943,29 +948,29 @@ as work is distributed according to the ratio $\frac{N}{P}$.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/cachearrow.eps}
-  \caption{Cache misses on Mira for all 4 test cases (low to high degrees of freedom in direction of the arrow) The dashed red line: L1 cache size}
+  \caption{Cache misses on Mira for all 4 test cases (low to high degrees of freedom in direction of the arrow). Dashed red line: L1 cache size.}
    \label{fig:cachemisses}
 \end{figure}
 
-All test cases on all the systems show a super linear scaling. This
+All test cases on all the systems show a super-linear scaling. This
 observation holds true with all timers and profilers switched off.
-Numerically there is no explanation for this behavior. 
+%Numerically there is no explanation for this behavior. 
 
-The usual explanation for super linear scaling is a sudden decrease of the cache
+The usual explanation for super-linear scaling is a sudden decrease of the cache
 misses for decreasing $\frac{N}{P}$, as parts of the solver can entirely work on data that lies in the cache. 
 To investigate this, we extracted the cache misses on Mira as provided by HPM (see
-\reffig{fig:cachemisses}). Mira is equipped with L1 cache of 16kb. The L2 cache
-of 32mb, that is located at the node level, becomes irrelevant as we had consistently
+\reffig{fig:cachemisses}). Mira is equipped with L1 cache' of 16kB. The L2 cache
+of 32MB, that is located at the node level, becomes irrelevant as we had consistently
 over 97\% cache misses. The L1 cache can be filled with $2048$ double precision
 numbers, see
 \reffig{fig:cachemisses} the vertical dashed red line which indicates the cache 
 size below which all gridpoints would theoretically fit into cache. As we run with 2 processes per core, this would be at roughly $1000$
 degrees of freedom per process. Although the data fields achieve those sizes only at the strong scaling
 limit we do observe a general decrease in cache misses with decreasing
-$\frac{N}{P}$. In summary, we attribute the super linear scaling to cache
+$\frac{N}{P}$. In summary, we attribute the super-linear scaling to cache
 management and pipelining on the CPU of Mira. We do not possess profiling results 
 for Beskow or Titan and cannot study the cache misses there but we assume that the 
-reason for super linearity is similar as for Mira.
+reason for super-linearity is similar as for Mira.
 
 
 \subsection{Comparison between XXT and AMG}
@@ -1005,7 +1010,7 @@ combined with a high element count.
 %an order of magnitude higher, while AMG uses twice as many MPI calls. 
 \begin{table}
 \caption{Number of MPI calls and data communicated on $P=131,072$ at $Re_{\tau}=
-550$}
+550$.}
 \centering
 \begin{tabular}{l||c|c||c|c}
 \hline
@@ -1038,7 +1043,7 @@ the workload as well as the resulting imbalance in the communication.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/loadbalance.eps}
-  \caption{Histogram of the load imbalance at $2.184\times10^9$ degrees of freedom: number of processes per time spent in communication. Red bins:\% of processes at the lowest per core load, blue bins:\% of processes at highest per core load}
+  \caption{Histogram of the load imbalance at $2.184\times10^9$ degrees of freedom: number of processes per time spent in communication. Red bins: \% of processes at the lowest per core load, blue bins: \% of processes at highest per core load}
   \label{fig:imbalancehist}
 \end{figure}
 
@@ -1047,7 +1052,7 @@ the workload as well as the resulting imbalance in the communication.
 As a byproduct of our analysis we can mimic a weak scaling analysis by stacking up 
 all problem sizes at every MPI rank count. On Mira the communication is mostly 
 latency bound with a small influence from the
-bandwidth. This holds true for peer to peer communication as well as for the
+bandwidth. This holds also true for peer to peer communication as well as for the
 all-reduce (see \reffig{fig:pingpong}). Across the four test cases we can observe 
 a weak scaling in \reffig{fig:weakscaling}. It proves that the scaling on Mira is 
 mainly dependent on the ratio $\frac{N}{P}$. 
@@ -1062,7 +1067,7 @@ mainly dependent on the ratio $\frac{N}{P}$.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/projections.eps}
-  \caption{Convergence of solution with increase of projections space $L$. (green: $L=5$, red $L=0$) }
+  \caption{Convergence of solution with increase of projections space $L$ (green: $L=5$, red $L=0$).}
   \label{fig:projections}
 \end{figure}
 
