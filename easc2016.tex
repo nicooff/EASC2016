@@ -679,7 +679,8 @@ Our abstraction assumes that large scale runtime performance is mainly composed
 of
 \begin{enumerate}
   \item system hardware parameters consisting of the network topology, latency and
-    bandwidth\label{enum:a}, and CPU flops per second, 
+    bandwidth\label{enum:a}, and flops per second of matrix matrix products
+    (usually memory bandwidth bound), 
   \item time $T_a$ and $T_c$ spent in computation and communication largely
     dependent on \ref{enum:a}. and on their respective algorithmic complexities,
   \item and partitioning.\label{enum:c}
@@ -708,9 +709,10 @@ derivative $\frac{dT}{dP}$ of the
 of the total time $T(N,P)$ being equal to $0$, i.e.\ the point where the runtime
 starts increasing again with increasing $P$. That point represents the fastest
 time to solution. This is rather an upper bound of the strong scaling
-limit that would in most of our test runs never be observed. Hence, it has
-little practical meaning to the user, as he would never run the code in that
-regime, either due to the granularity limit or due to high computational costs. \refeqn{eq:strong} gives a lower bound and much more practical notion of the strong
+limit that would in most of our test runs never be observed. For Nek on Mira it has
+little practical meaning to the user, as that limit always implies the usage
+of all of Mira, which is in most cases too costly. Without a cost model,
+\refeqn{eq:strong} gives us a much lower and practical bound of the strong
 scaling limit. If communication takes longer than
 computation, the code is deemed to be at the strong scaling limit where the
 scaling starts diverging significantly from the perfect linear scaling. 
@@ -921,8 +923,7 @@ $\alpha$ and $\beta$  becomes irrelevant on Titan at a high core count.
 % Superlinearity
 
 In theory the computational time should match exactly the linear scaling
-as work is distributed according to the ratio $\frac{N}{P}$. All
-algorithms in Nek5000 should yield little computational overhead due to the halo update.
+as work is distributed according to the ratio $\frac{N}{P}$. 
 
 \begin{figure}
   \centering
@@ -1028,7 +1029,7 @@ the workload as well as the resulting imbalance in the communication.
 
 \subsection{Weak scaling}
 % Weak scaling
-As a byproduct of our analysis we can mimic a weak scaling analysis by stashinh up all problem sizes at every MPI rank count. On Mira the communication is mostly latency bound with a small influence from the
+As a byproduct of our analysis we can mimic a weak scaling analysis by stacking up all problem sizes at every MPI rank count. On Mira the communication is mostly latency bound with a small influence from the
 bandwidth. This holds true for peer to peer communication as well as for the
 all-reduce (see \reffig{fig:pingpong}). Across the four test cases we can observe a weak scaling in
 \reffig{fig:weakscaling}. It proves that the scaling on Mira is mainly dependent on the ratio $\frac{N}{P}$. 
