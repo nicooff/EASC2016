@@ -279,7 +279,7 @@ and thus has experienced many trends and changes in high performance computing s
 Nek5000 is a code based on the spectral element method, intended to solve problems
 from thermal hydraulics, which performs best on
 complex geometries, wall-bounded problems (although it can handle the most common types of
-boundary condition), at large scales on any commonly used parallel computer
+boundary conditions), at large scales on any commonly used parallel computer
 architecture. The present study is aimed at providing users a handle on
 parameter choices for performance and scalability, and relies on previous work ,
 such as \cite{fischer:scaling} and \cite{tufo:terascale}. Hereby we benchmark
@@ -294,7 +294,7 @@ or AMG \cite{LottesAMG}. We explore both
 approaches and quantify the regimes in which either of them is recommendable. 
 
 In the rest of the paper, we start by giving a short description of the numerical method
-and implementation. Then we describre the hardware employed, focusing particularly on
+and implementation. Then we describe the hardware employed, focusing particularly on
 the architecture, interconnect network technology and associated latency and
 bandwidth. We also present the performace analysis tools we used for profiling the code
 as well as the test cases considered for performing the tests. We finish with a 
@@ -314,7 +314,7 @@ restrictive CFL condition for the nonlinear advection operator, or orthogonal
 projections of the solution to reduce the iteration count of the algebraic
 solver etc. Here we focus only on one track to solution which is consistent with
 the physical case we study and the way it was initially performed, i.e. fully 
-resiolved DNS of a turbulent pipe flow \cite{Khoury2013}.
+resolved DNS of a turbulent pipe flow \cite{Khoury2013}.
 
 \subsection{Numerical method}
 The incompressible Navier--Stokes equations are given here by
@@ -327,10 +327,10 @@ where $\mathbf{u}$ is the velocity and $p$ the pressure. The Reynolds number
 $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$,
 length scale $L$ and kinematic viscosity $\nu$. equations~\refeqn{eqn:NS_momentum} 
 and~\refeqn{eqn:NS_continuity} are called the continuity and momentum equations 
-respectively. There are two main solvers, called PNPN and PNPN-2, available within 
+respectively. There are two main solvers, called $\mathbb{P}_N-\mathbb{P}_N$ and $\mathbb{P}_N-\mathbb{P}_{N-2}$, available within 
 Nek5000 for computing the solution of the incompressible 
 Navier-Stokes equations, and of these one is also amenable to non-divergence free 
-flows, as available in \cite{Tomboulides1997}, namely PNPN. Although we operate in the incompressible
+flows, as available in \cite{Tomboulides1997}, namely $\mathbb{P}_N-\mathbb{P}_N$. Although we operate in the incompressible
 regime we picked this solver to preserve generality. 
 
 The momentum equation is time integrated via an implicit-explicit scheme, also
@@ -400,7 +400,7 @@ velocity components, is solved using the conjugate gradients (CG) iterative solv
 The geometry is meshed using hexahedral elements, partitioned for parallel
 computation using a spectral bisection algorithm as implemented in ``genmap''
 which accompanies the code Nek5000 \cite{argonne:nekdoc}. An example of the
-partitioning for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffig{fig:partition_vis}, where each element is colored according to the MPI rank it belongs to. We note that partition is done at the element level and not finer.
+partitioning for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffig{fig:partition_vis}, where each element is colored according to the MPI rank it belongs to. We note that the partitioning is done at the element level and not finer.
 \begin{figure}
   \centering
   \subfigure[Partition]{
@@ -555,7 +555,7 @@ latency and inverse bandwidth. The relation between dimensional and non-dimensio
 The values of $\alpha^*$ and $\beta^*$ are computed following a ``ping-pong" test 
 as described in \cite{fischer:scaling}. During this test, the time required to 
 send and receive messages of various sizes between 512 processors (default value
-for the test in Nek) is measured 
+for the test in Nek5000) is measured 
 and subsequently the values of $\alpha$ and $\beta$ are computed as the best fit 
 for the linear model equation~\refeqn{eqn:lincomm}. The value of $t_a$ is determined by 
 performing a number of matrix-matrix multiplications streamed from memory
@@ -570,7 +570,7 @@ inverse of the mean flop rate. Results for the ping-pong test are shown in
 \reffig{fig:pingpong} along with the linear model for all computers. An overview 
 of the latencies, bandwidths and inverse flop rates is presented in 
 \reftab{tab:alpha_beta}. The non-dimensional parameters $\alpha$ and $\beta$ are 
-a relative measure of the communication to computation cost. High value for these
+a relative measure of the communication to computation cost. High values for these
 parameters imply that the limitation in parallel efficiency will arise earlier due 
 to a relatively high communication cost. Consistent throughout all our studies is 
 that all machines are strongly limited by the latency, already a noted common 
@@ -740,7 +740,7 @@ scaling starts diverging significantly from the perfect linear scaling.
 The test case used to explore the scaling behavior of Nek5000 is the one of a turbulent 
 flow in a straight pipe, a generic and widely known case across the CFD community.
 This should allow potential users to estimate and compare the scaling of Nek5000 to other CFD software.
-Our test case is run in four different regimes at 4 different problem sizes denoted by
+Our test case is run in four different regimes for 4 different problem sizes denoted by
 $Re_{\tau} = 180$, $360$, $550$ and $1000$, described more in
 detail in \refsec{sec:pipe}. These cases were run with various processor counts 
 on three systems. The lower bound of the processor count is dictated by the size 
@@ -758,7 +758,7 @@ In \cite{fischer:scaling} the strong scaling limit \refeqn{eq:strong} was estima
 to be around $\frac{N}{P}=2000$ for the conjugate gradients (CG) and %$20000$ or 
 $7000$ for the geometric multigrid (MG) on Mira when using finite
 differences. These values are given as an indication %in \reftab{tab:stronglimit} 
-but we remind that Nek5000 is a spectral code and gathers several different algebraic 
+but we remind that Nek5000 is an incompressible flow solver and gathers several different algebraic 
 solvers each with its own customized preconditioning strategy. Indeed CG is implemented 
 with Jacobi preconditioning for velocity and GMRES is used with XXT and AMG (which 
 is different from the geometric multigrid) preconditioning for pressure. 
@@ -778,7 +778,7 @@ thrown off slightly from the theoretical results in \cite{fischer:scaling}.
 The core of the present analysis relies on the data in \reffig{fig:scaling_mira}, \reffig{fig:scaling_titan} and \reffig{fig:scaling_beskow} for each one of the three machines discussed here. 
 The compute time and
 communication time are illustrated along with the total time for both XXT and AMG across all test cases. 
-Since each independent measurment is taken at powers of $2$ number of processes $P$ 
+Since each independent measurement is taken at powers of $2$ number of processes $P$ 
 the plots are presented in logarithmic scale. However, in order to help identify linear scaling of the
 compute time, the optimal linear scaling line of the compute time was added, i.e.
 $$
@@ -907,7 +907,7 @@ Beskow is roughly one order of magnitude higher than on Mira in terms of degrees
 of freedom per core and is located around $\frac{N}{P} \sim 20000 - 50000$. This 
 is consistent with the values for the non-dimensional latency $\alpha$ 
 %and inverse bandwidth $\beta$ 
-from Table \reffig{tab:alpha_beta}. Indeed Beskow has faster CPUs, thus having a
+from \reftab{tab:alpha_beta}. Indeed Beskow has faster CPUs, thus having a
 lower value for $t_a$. This leads to a higher $\alpha$, although the values for
 $\alpha*$ are realatively comparable for Titan, Mira and Beskow. %\footnote{this demands a bit scrutiny}
 
@@ -915,7 +915,7 @@ As an intermediate conclusion, we note that the scalability limit on Mira and Be
 
 On Titan, the scalability limit exhibits a different behavior.
 The strong scaling limit for $\frac{N}{P}$ increases
-significantly with bigger cases as we see from Table \reffig{tab:stronglimit}.
+significantly with bigger cases as we see from \reftab{tab:stronglimit}.
 The limit goes from $\frac{N}{P} \sim 9000$ to $\frac{N}{P} \sim 228000$ across the cases $Re_{\tau}=180$ to $Re_{\tau}=1000$ for XXT. Similarly for AMG $\frac{N}{P}  \sim 11000$ increases sharply to $\frac{N}{P} \sim 132000$ from the smallest case $Re_{\tau}=180$ to 
 $Re_{\tau}=1000$. This limitation cannot be fully explained from the non-dimensional latencies and bandwidths from \reftab{tab:alpha_beta}. %, as we do not expect the non-dimensional latency $\alpha$ to have similar values on Titan and Mira. 
 %For small cases, i.e. $Re_{\tau} = 180$, where the strong scaling limit depends less on the %machine characteristics the balance between communication and computation is comparable but it deprecates as the problem size increases. 
@@ -959,7 +959,7 @@ observation holds true with all timers and profilers switched off.
 The usual explanation for super-linear scaling is a sudden decrease of the cache
 misses for decreasing $\frac{N}{P}$, as parts of the solver can entirely work on data that lies in the cache. 
 To investigate this, we extracted the cache misses on Mira as provided by HPM (see
-\reffig{fig:cachemisses}). Mira is equipped with L1 cache' of 16kB. The L2 cache
+\reffig{fig:cachemisses}). Mira is equipped with L1 cache of 16kB. The L2 cache
 of 32MB, that is located at the node level, becomes irrelevant as we had consistently
 over 97\% cache misses. The L1 cache can be filled with $2048$ double precision
 numbers, see
@@ -978,11 +978,11 @@ reason for super-linearity is similar as for Mira.
 
 For smaller problem sizes ($Re_{\tau}=180$), XXT slightly outperforms AMG on all machines
 for a large number of cores, after the strong scaling limit has been reached. 
-For this case, computation time is almost unaffected by the method while and the better perfomance
+For this case, computation time is almost unaffected by the method and the better perfomance
 of XXT is attributed to a lower communication. For the cases $Re_{\tau}=360$ and 
 $550$ on Mira and Beskow, compute time is noticeably lower for AMG than XXT by
 about a factor $5-10\%$. For $Re_{\tau}=550$ on Mira, computation time is also lower
-for AMG. This leads to the clear conclusion that AMG for that case on that computer
+for AMG. This leads to the clear conclusion that AMG for this case on this computer
 is systematically better by about $10\%$. However, no such incisive conclusion can be drawn for the other
 cases because of varying communication times. For $Re_{\tau}=1000$ on Beskow, 
 AMG is once again faster in terms of computation and communication time, but the 
@@ -1029,7 +1029,7 @@ Total&252312&&130520\\
 \label{tab:xxtamg}
 \end{table}
 
-\subsection{Load imbalance}
+\subsection{Load balancing}
 % Load imbalance
 
 Beyond the strong scaling limit, the computation time increases and
@@ -1060,7 +1060,7 @@ mainly dependent on the ratio $\frac{N}{P}$.
   \centering
   \includegraphics[width=\linewidth]{./figures/weak.png}
   \caption{Weak Scaling: For a fixed $\frac{N}{P}$, the same runtime is
-  observed across the four test cases.}
+  observed across the four test cases, colorbar:total time (seconds).}
   \label{fig:weakscaling}
 \end{figure}
 
@@ -1070,6 +1070,8 @@ mainly dependent on the ratio $\frac{N}{P}$.
   \caption{Convergence of solution with increase of projections space $L$ (green: $L=5$, red $L=0$).}
   \label{fig:projections}
 \end{figure}
+\subsection{Time to solution}
+Although we focus on parallelism and performance across a high number of processes the most important feature of a CFD code in practice remains the ability to minimize the time to solution. The parallelsim is not the sole contributor to fast time to solution, but also secondary strategies such as projections mentioned in %\refsec{sec:}
 
 
 \section{Conclusion}
