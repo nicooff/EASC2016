@@ -44,12 +44,12 @@
 % ===============================================================
 %
 % For tracking purposes - this is V2.0 - May 2012
-\newcommand{\refalg}[1]{Algorithm~\ref{#1}}
+\newcommand{\refalg}[1]{Alg.~\ref{#1}}
 \newcommand{\refsec}[1]{Sect.~\ref{#1}}
 \newcommand{\reffig}[1]{Fig.~\ref{#1}}
 \newcommand{\refsubfig}[1]{Fig.~\subref{#1}}
-\newcommand{\reftab}[1]{Table~\ref{#1}}
-\newcommand{\refeqn}[1]{(\ref{#1})}
+\newcommand{\reftab}[1]{Tab.~\ref{#1}}
+\newcommand{\refeqn}[1]{Eq.(\ref{#1})}
 \newcommand{\reflst}[1]{Listing~(\ref{#1})}
 \newcommand{\bigo}[1]{\mathcal{O}(#1)}
 
@@ -325,7 +325,7 @@ The incompressible Navier--Stokes equations are given here by
 \end{align}
 where $\mathbf{u}$ is the velocity and $p$ the pressure. The Reynolds number 
 $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$,
-length scale $L$ and kinematic viscosity $\nu$. equations~\refeqn{eqn:NS_momentum} 
+length scale $L$ and kinematic viscosity $\nu$. ~\refeqn{eqn:NS_momentum} 
 and~\refeqn{eqn:NS_continuity} are called the continuity and momentum equations 
 respectively. There are two main solvers, called PNPN and PNPN-2, available within 
 Nek5000 for computing the solution of the incompressible 
@@ -351,7 +351,7 @@ Ignoring boundary conditions and other numerical technicalities available in \ci
 As it can be observed, solving the incompressible Navier-Stokes equations is reduced 
 to the evaluation of $\mathbf{F}_n$ in \refeqn{eqn:discrete}, followed by one Poisson 
 equation and a Helmholtz equation thereafter for each velocity component (2 in 2D and 3 in 3D). 
-Equation \refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main 
+\refeqn{eqn:hmhz_pres}, the Poisson equation for the pressure, is the main 
 source of stiffness and its efficient resolution by an iterative solver is preceded 
 by two steps. First of all, the pressure at each time step is projected onto a 
 subspace of previous solutions, and as described in \cite{Fischer1998} has been shown 
@@ -374,7 +374,7 @@ a coarsening and an interpolation operation on a predefined number of coarse gri
 levels \cite{LottesAMG}. 
 
 Finally, the pressure equation is solved with the generalized minimal residual 
-method (GMRES). Equation~\refeqn{eqn:hmhz_vel}, the Helmholtz equation for the 
+method (GMRES). \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the 
 velocity components, is solved using the conjugate gradients (CG) iterative solver with a simple Jacobi preconditioner.
 % \begin{align}
 %  \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
@@ -557,7 +557,7 @@ as described in \cite{fischer:scaling}. During this test, the time required to
 send and receive messages of various sizes between 512 processors (default value
 for the test in Nek5000) is measured 
 and subsequently the values of $\alpha$ and $\beta$ are computed as the best fit 
-for the linear model equation~\refeqn{eqn:lincomm}. The value of $t_a$ is determined by 
+for the linear model \refeqn{eqn:lincomm}. The value of $t_a$ is determined by 
 performing a number of matrix-matrix multiplications streamed from memory
 representing the tensor products that are at the core of a spectral element 
 solver \cite{fischer:hom} and accounting for a big part of the solve time 
@@ -619,8 +619,8 @@ it is expected that Beskow will not scale as well as the two others.
 
 %Following \refalg{alg:code_struct} the main timer ($ttotal$) measures the total
 %time spent in the outer timestepping loop for the last 20 timesteps. Additional
-%timers for the computational cost of the right hand side of Equation~\refeqn{eqn:hmhz_pres}
-%($trhsp$), and of the right hand side of Equation~\refeqn{eqn:hmhz_vel} ($trhsv$) 
+%timers for the computational cost of the right hand side of \refeqn{eqn:hmhz_pres}
+%($trhsp$), and of the right hand side of \refeqn{eqn:hmhz_vel} ($trhsv$) 
 %are added. We also time all the different projections separately, using two timers 
 %for both the pressure and velocity: one timer for projecting the residuals before 
 %the Helmholtz solve ($tprojp1$ and $tprojv1$) and one for updating and projecting 
@@ -731,8 +731,8 @@ starts increasing again with increasing $P$. That point represents the fastest
 time to solution. This is rather an upper bound of the strong scaling
 limit that would in most of our test runs never be observed. For Nek5000 on Mira it has
 little practical meaning to the user, as that limit always implies the usage
-of all of Mira, which is in most cases too costly. Without a cost model,
-equation \refeqn{eq:strong} gives us a much lower and practical bound of the strong
+of all of Mira, which is in most cases too costly. Without a cost model, 
+\refeqn{eq:strong} gives us a much lower and practical bound of the strong
 scaling limit. If communication takes longer than
 computation, the code is deemed to be at the strong scaling limit where the
 scaling starts diverging significantly from the perfect linear scaling. 
@@ -851,7 +851,7 @@ where $P_1$ is the lowest process count possible for the given problem size. It 
 
 \subsection{Strong scaling limit}
 
-For both XXT and AMG the strong scaling limit, i.e. equation~\refeqn{eq:strong}, can be readily extracted from the plots by examining the intersection of the computation time 
+For both XXT and AMG the strong scaling limit, i.e. \refeqn{eq:strong}, can be readily extracted from the plots by examining the intersection of the computation time 
 and the communication time. For the given intersection point we can identify the values of $\frac{N}{P}$ through linear interpolation and they are reported them in \reftab{tab:stronglimit}.
 
 \begin{table}  
