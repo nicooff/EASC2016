@@ -426,8 +426,8 @@ $$H \phi=(h_1 A+h_2 B)[\phi],$$
 where $A$ is the stiffness matrix stemming from the discretization of the Laplacian and $B$ is the mass matrix. 
 Different choices for the factors $h_1$ and $h_2$ yield either the Poisson equation, or the Helmholtz equation
 \begin{eqnarray}
-Hp &=& (Ap)=f_p, \quad (h_1=1, h_2=0)\\
-Hu &=&(Au -\frac{b_0}{\Delta t} B u)=f_u, \quad (h_1=1, h_2=-\frac{b_0}{\Delta t}).
+Hp &=& (A)[p]=f_p, \quad (h_1=1, h_2=0)\\
+Hu &=&(A -\frac{b_0}{\Delta t} B )[u]=f_u, \quad (h_1=1, h_2=-\frac{b_0}{\Delta t}).
 \end{eqnarray}
 
 
