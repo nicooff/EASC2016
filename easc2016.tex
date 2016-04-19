@@ -374,9 +374,9 @@ second method is an algebraic multigrid solver (AMG) that operates a smoothing,
 a coarsening and an interpolation operation on a predefined number of coarse grid 
 levels. 
 
-Finally, the pressure equation is solved with the generalized minimal residual 
-method (GMRES). \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the 
-velocity components, is solved using the conjugate gradients (CG) iterative solver with a simple Jacobi preconditioner.
+%Finally, the pressure equation is solved with the generalized minimal residual 
+%method (GMRES). \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the 
+%velocity components, is solved using the conjugate gradients (CG) iterative solver with a simple Jacobi preconditioner.
 % \begin{align}
 %  \mathbf{u}_i^* & = \beta_0 \mathbf{u}_i^n + \beta_1 \mathbf{u}_i^{n-1} + \beta_2 \mathbf{u}_i^{n-2}, \label{eqn:extrap_vel}\\
 %  \mathbf{h}_i^n & = N(\mathbf{u}_i^n) + B \mathbf{f}_i + ???, \label{eqn:rhs}\\
@@ -412,7 +412,7 @@ partitioning for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffi
   \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/vel_magn.png}
   \label{fig:flow_vis}
   }
-  \caption{Partition of the elements and velocity magnitude in the pipe ($Re_{\tau}=180$).}
+  \caption{Partition of the elements on $64$ processes and velocity magnitude in the pipe ($Re_{\tau}=180$).}
   \label{fig:partition}
 \end{figure}
  
