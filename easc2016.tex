@@ -83,7 +83,7 @@
 
 %
 % --- Author Metadata here ---
-\conferenceinfo{EASC2016}{'16, Stockholm, Sweden}
+%\conferenceinfo{EASC2016}{'16, Stockholm, Sweden}
 %\CopyrightYear{2007} % Allows default copyright year (20XX) to be over-ridden - IF NEED BE.
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
@@ -430,20 +430,6 @@ Hp &=& (A)[p]=f_p, \quad (h_1=1, h_2=0)\\
 Hu &=&(\frac{1}{Re}A -\frac{b_0}{\Delta t} B )[u]=f_u, \quad (h_1=1, h_2=-\frac{b_0}{\Delta t}).
 \end{eqnarray}
 
-
-By virtue of the method of projections, we do not solve $Hp=f_p$ or $Hu=f_u$, but 
-rather $H\delta p=\delta f_p$ and $H\delta u=\delta f_u$, where $\delta f_p$ and 
-$\delta f_u$ are the rejections of $f_p$ and $f_u$ respectively. Details on the 
-technicalities of this are abundant in \cite{Fischer1998}. The first step is to 
-compute the corresponding right hand sides and then project them onto a subspace 
-of previous solutions (subspaces are denoted by $X$ and the size of the space is $L$).
- The corrections $\delta p$ and $\delta u$ are then computed by solving the Helmholtz 
-equation for the rejections and added to the previous solution. A simplified structure 
-for the Helmholtz solver is shown in \refalg{alg:helmholtz}. The Poisson equation for
-the pressure is solved with the GMRES method. The pressure solve also includes the
-computation of the preconditioner based on the Schwarz overlapping method and 
-coarse grid solve, which is not the case for the velocity and constitutes an 
-important part of the work and communication. The Helmholtz equation is solved using the CG method for each component of the velocity.
 \begin{algorithm}
 \begin{algorithmic}
 \Procedure{Solver}{}
@@ -470,6 +456,21 @@ important part of the work and communication. The Helmholtz equation is solved u
 \caption{Main solver.}
 \label{alg:code_struct}
 \end{algorithm}
+
+
+By virtue of the method of projections, we do not solve $Hp=f_p$ or $Hu=f_u$, but 
+rather $H\delta p=\delta f_p$ and $H\delta u=\delta f_u$, where $\delta f_p$ and 
+$\delta f_u$ are the rejections of $f_p$ and $f_u$ respectively. Details on the 
+technicalities of this are abundant in \cite{Fischer1998}. The first step is to 
+compute the corresponding right hand sides and then project them onto a subspace 
+of previous solutions (subspaces are denoted by $X$ and the size of the space is $L$).
+ The corrections $\delta p$ and $\delta u$ are then computed by solving the Helmholtz 
+equation for the rejections and added to the previous solution. A simplified structure 
+for the Helmholtz solver is shown in \refalg{alg:helmholtz}. The Poisson equation for
+the pressure is solved with the GMRES method. The pressure solve also includes the
+computation of the preconditioner based on the Schwarz overlapping method and 
+coarse grid solve, which is not the case for the velocity and constitutes an 
+important part of the work and communication. The Helmholtz equation is solved using the CG method for each component of the velocity.
 
 \begin{algorithm}
 \begin{algorithmic}
@@ -522,7 +523,9 @@ Nek5000 supports marginally as mentioned in \cite{Otten2016}, no production runs
 were performed outside the MPI environment and we shall restrict the use of
 Titan to CPU parallelism and rely solely
 on the 16 Opteron cores per node with one process each. The same setup of 1
-process per CPU core was applied to the smallest system Beskow, a Cray XC40.
+process per CPU core, i.e. not using hyperthreading, was applied to the smallest 
+system Beskow, a Cray XC40. Indeed, some tests performed on a single Haswell core 
+showed that hyperthreading did not improve time to solution.
 
 \begin{table}
 \centering
@@ -584,6 +587,11 @@ noise. Furthermore, it assumes that all communication between two processes is
 homogeneous; it does not distinguish for example between on node and off node
 communication. This model works well for Mira. This work will also point out its
 weakness when dealing with system noise. 
+
+As a side note, hardware might not be the only responsible for the high noise in
+communication and we would like to mention as an indication that we used the Cray 
+programming environment version $5.2.26$. 
+
 % Consequently, it 
 % is expected that on a computer with high values onof those parameters, like Beskow,
 % the scalability limit will occur for a lower number of cores because communication
