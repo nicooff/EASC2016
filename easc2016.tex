@@ -578,6 +578,12 @@ that all machines are strongly limited by the latency, already a noted common
 feature of modern computers. This limitation is strongest on
 Beskow, which is the newest of the three machines and has fastest CPUs. Therefore,
 it is expected that Beskow will not scale as well as the two others.
+
+A drawback of our performance model is that it does not capture system
+noise. Furthermore, it assumes that all communication between two processes is
+homogeneous; it does not distinguish for example between on node and off node
+communication. This model works well for Mira. This work will also point out its
+weakness when dealing with system noise. 
 % Consequently, it 
 % is expected that on a computer with high values onof those parameters, like Beskow,
 % the scalability limit will occur for a lower number of cores because communication
@@ -958,16 +964,22 @@ observation holds true with all timers and profilers switched off.
 
 The usual explanation for super-linear scaling is a sudden decrease of the cache
 misses for decreasing $\frac{N}{P}$, as parts of the solver can entirely work on data that lies in the cache. 
-To investigate this, we extracted the cache misses on Mira as provided by HPM (see
-\reffig{fig:cachemisses}). Mira is equipped with L1 cache of 16kB. The L2 cache
-of 32MB, that is located at the node level, becomes irrelevant as we had consistently
-over 97\% cache misses. The L1 cache can be filled with $2048$ double precision
+To investigate this, we extracted the cache misses on Mira as provided through
+HPM by accessing hardware counters (see
+\reffig{fig:cachemisses}). Mira is equipped with both a L1 data cache and
+instruction cache of 16kB each. The cache misses account for both data and
+instruction cache misses. The L2 cache
+of 32MB, that is located at the node level, becomes irrelevant as HPM
+consistently reported over 97\% cache misses. The L1 cache can be filled with $2048$ double precision
 numbers, see
 \reffig{fig:cachemisses} the vertical dashed red line which indicates the cache 
-size below which all gridpoints would theoretically fit into cache. As we run with 2 processes per core, this would be at roughly $1000$
+size of 16kB below which all gridpoints would theoretically fit into data cache. As we run with 2 processes per core, this would be at roughly $1000$
 degrees of freedom per process. Although the data fields achieve those sizes only at the strong scaling
 limit we do observe a general decrease in cache misses with decreasing
-$\frac{N}{P}$. In summary, we attribute the super-linear scaling to cache
+$\frac{N}{P}$ and thus a better cache exploitation. We cannot explain this behavior as that would require a more
+granular analysis of the computational kernels. Measuring the cache misses over
+the entire timestep with mixed data and instruction misses, gives us only a
+general overview of the cache behavior. In summary, we attribute the super-linear scaling to cache
 management and pipelining on the CPU of Mira. We do not possess profiling results 
 for Beskow or Titan and cannot study the cache misses there but we assume that the 
 reason for super-linearity is similar as for Mira.
@@ -1071,7 +1083,18 @@ mainly dependent on the ratio $\frac{N}{P}$.
   \label{fig:projections}
 \end{figure}
 \subsection{Time to solution}
-Although we focus on parallelism and performance across a high number of processes the most important feature of a CFD code remains, in practice, the ability to minimize the time to solution. The parallelsim is not the sole contributor to fast time to solution, but also secondary strategies such as projections mentioned in \refsec{sec:method}. Here we assessed a recent upgraded implementation of the projections scheme, see \reffig{fig:projections}, where we note that the number of iterations per solve decreases around 3.5 times as we increase the projections space $L$. Compared to the reported results in \cite{Fischer1998} an improved reusability of the projection space data eliminates the spikes in convergence.
+Although we focus on parallelism and performance across a high number of
+processes the most important feature of a CFD code remains, in practice, the
+ability to minimize the time to solution. The parallelsim is not the sole
+contributor to fast time to solution, but also secondary strategies such as
+projections mentioned in \refsec{sec:method}. Here we assessed a recent upgraded
+implementation of the projections scheme, see \reffig{fig:projections}, where we
+note that the number of iterations per solve decreases around 3.5 times as we
+increase the projections space $L$. Compared to the reported results in
+\cite{Fischer1998} an improved reusability of the projection space data
+eliminates the spikes in convergence. As we mentioned before, the memory
+footprint of Nek5000 is roughly 500 fields. Thus the additional memory
+requirement of the projections is currently of little relevance. 
 
 
 \section{Conclusion}
