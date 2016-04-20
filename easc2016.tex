@@ -328,7 +328,7 @@ where $\mathbf{u}$ is the velocity and $p$ the pressure. The Reynolds number
 $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$,
 length scale $L$ and kinematic viscosity $\nu$. \refeqn{eqn:NS_momentum} 
 and \refeqn{eqn:NS_continuity} are called the continuity and momentum equations 
-respectively. There are two main solvers, called PNPN and PNPN-2, available within 
+respectively. There are two main solvers, called PNPN ($\mathbb{P}_N-\mathbb{P}_N$) and PNPN-2($\mathbb{P}_N-\mathbb{P}_{N-2}$), available within 
 Nek5000 for computing the solution of the incompressible 
 Navier-Stokes equations, and of these one is also amenable to non-divergence free 
 flows, as available in \cite{Tomboulides1997}, namely $\mathbb{P}_N-\mathbb{P}_N$. Although we operate in the incompressible
@@ -345,8 +345,8 @@ where we denoted the nonlinear operator $\mathbf u \cdot \nabla \mathbf u=N(\mat
 
 Ignoring boundary conditions and other numerical technicalities available in \cite{Tomboulides1997} we end up solving
 \begin{eqnarray}
- \Delta p^{n} = \nabla \cdot \left( -\frac{b_0}{\Delta t} \mathbf{u}^{n} + \mathbf{F}_n \left( \mathbf{u},\mathbf f \right) \right), \label{eqn:hmhz_pres}\\
- \Delta \mathbf{u}^{n+1}- \frac{b_0}{\Delta t} \mathbf{u}^{n+1}  =  \nabla p^{n+1} + \mathbf{F}_n \left( \mathbf{u}, \mathbf f) \right. . \label{eqn:hmhz_vel}
+ \Delta p^{n} &= &\nabla \cdot  \mathbf{F}_n \left( \mathbf{u},\mathbf f \right), \label{eqn:hmhz_pres}\\
+ \frac{1}{Re}\Delta \mathbf{u}^{n}- \frac{b_0}{\Delta t} \mathbf{u}^{n} & = & \nabla p^{n} + \mathbf{F}_n ( \mathbf{u}, \mathbf f)  +\sum\limits_{j=1}^k \frac{b_j}{\Delta t} \mathbf u^{n-j} . \label{eqn:hmhz_vel}
 \end{eqnarray}
 
 As it can be observed, solving the incompressible Navier-Stokes equations is reduced 
@@ -427,7 +427,7 @@ where $A$ is the stiffness matrix stemming from the discretization of the Laplac
 Different choices for the factors $h_1$ and $h_2$ yield either the Poisson equation, or the Helmholtz equation
 \begin{eqnarray}
 Hp &=& (A)[p]=f_p, \quad (h_1=1, h_2=0)\\
-Hu &=&(A -\frac{b_0}{\Delta t} B )[u]=f_u, \quad (h_1=1, h_2=-\frac{b_0}{\Delta t}).
+Hu &=&(\frac{1}{Re}A -\frac{b_0}{\Delta t} B )[u]=f_u, \quad (h_1=1, h_2=-\frac{b_0}{\Delta t}).
 \end{eqnarray}
 
 
