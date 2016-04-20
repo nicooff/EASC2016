@@ -371,9 +371,14 @@ method is a Cholesky factorization of the matrix $A_0^{-1}$ into $XX^T$ with a
 convenient refactoring of the underlying matrix to maximize the sparsity pattern 
 of $X^T$. This factorization is subsequently referred to as XXT and details 
 regarding complexity and implementation are available in \cite{Tufo2001151}. The 
-second method is an algebraic multigrid solver (AMG) that operates a smoothing, 
-a coarsening and an interpolation operation on a predefined number of coarse grid 
-levels. 
+second method is a single V-cycle of a highly-tuned
+AMG solver that is designed specifically to be communication minimal
+and optimal for coarse-grid problems where one anticipates very
+few degrees of freedom per processor \cite{LottesAMG}. %is an algebraic multigrid solver (AMG) that operates a smoothing, 
+%a coarsening and an interpolation operation on a predefined number of coarse grid 
+%levels. 
+
+
 
 %Finally, the pressure equation is solved with the generalized minimal residual 
 %method (GMRES). \refeqn{eqn:hmhz_vel}, the Helmholtz equation for the 
@@ -431,6 +436,20 @@ Hp &=& (A)[p]=f_p, \quad (h_1=1, h_2=0)\\
 Hu &=&(\frac{1}{Re}A -\frac{b_0}{\Delta t} B )[u]=f_u, \quad (h_1=1, h_2=-\frac{b_0}{\Delta t}).
 \end{eqnarray}
 
+By virtue of the method of projections, we do not solve $Hp=f_p$ or $Hu=f_u$, but 
+rather $H\delta p=\delta f_p$ and $H\delta u=\delta f_u$, where $\delta f_p$ and 
+$\delta f_u$ are the rejections of $f_p$ and $f_u$ respectively. Details on the 
+technicalities of this are abundant in \cite{Fischer1998}. The first step is to 
+compute the corresponding right hand sides and then project them onto a subspace 
+of previous solutions (subspaces are denoted by $X$ and the size of the space is $L$).
+ The corrections $\delta p$ and $\delta u$ are then computed by solving the Helmholtz 
+equation for the rejections and added to the previous solution. A simplified structure 
+for the Helmholtz solver is shown in \refalg{alg:helmholtz}. The Poisson equation for
+the pressure is solved with the GMRES method. The pressure solve also includes the
+computation of the preconditioner based on the Schwarz overlapping method and 
+coarse grid solve, which is not the case for the velocity and constitutes an 
+important part of the work and communication. The Helmholtz equation is solved using the CG method for each component of the velocity.
+
 \begin{algorithm}
 \begin{algorithmic}
 \Procedure{Solver}{}
@@ -457,21 +476,6 @@ Hu &=&(\frac{1}{Re}A -\frac{b_0}{\Delta t} B )[u]=f_u, \quad (h_1=1, h_2=-\frac{
 \caption{Main solver.}
 \label{alg:code_struct}
 \end{algorithm}
-
-
-By virtue of the method of projections, we do not solve $Hp=f_p$ or $Hu=f_u$, but 
-rather $H\delta p=\delta f_p$ and $H\delta u=\delta f_u$, where $\delta f_p$ and 
-$\delta f_u$ are the rejections of $f_p$ and $f_u$ respectively. Details on the 
-technicalities of this are abundant in \cite{Fischer1998}. The first step is to 
-compute the corresponding right hand sides and then project them onto a subspace 
-of previous solutions (subspaces are denoted by $X$ and the size of the space is $L$).
- The corrections $\delta p$ and $\delta u$ are then computed by solving the Helmholtz 
-equation for the rejections and added to the previous solution. A simplified structure 
-for the Helmholtz solver is shown in \refalg{alg:helmholtz}. The Poisson equation for
-the pressure is solved with the GMRES method. The pressure solve also includes the
-computation of the preconditioner based on the Schwarz overlapping method and 
-coarse grid solve, which is not the case for the velocity and constitutes an 
-important part of the work and communication. The Helmholtz equation is solved using the CG method for each component of the velocity.
 
 \begin{algorithm}
 \begin{algorithmic}
@@ -587,7 +591,8 @@ A drawback of our performance model is that it does not capture system
 noise. Furthermore, it assumes that all communication between two processes is
 homogeneous; it does not distinguish for example between on node and off node
 communication. This model works well for Mira. This work will also point out its
-weakness when dealing with system noise. 
+weakness when dealing with system noise. Relevant discussion about noise at 
+scale can be found in \cite{Hoefler:2010}.
 
 As a side note, hardware might not be the only responsible for the high noise in
 communication and we would like to mention as an indication that we used the Cray 
@@ -730,8 +735,8 @@ of
   \item system hardware parameters consisting of the network topology, latency and
     bandwidth\label{enum:a}, and flops per second of matrix matrix products
     (usually memory bandwidth bound), 
-  \item time $T_a$ and $T_c$ spent in computation and communication largely
-    dependent on point \ref{enum:a} and on their respective algorithmic complexities,
+  \item time $T_a$ and $T_c$ spent in computation and communication for the measured 
+ $20$ timesteps largely dependent on point \ref{enum:a} and on their respective algorithmic complexities,
   \item partitioning.\label{enum:c}
 \end{enumerate}
 
@@ -974,7 +979,7 @@ as work is distributed according to the ratio $\frac{N}{P}$.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/cachearrow.eps}
-  \caption{Cache misses on Mira for all 4 test cases (low to high degrees of freedom in direction of the arrow). Dashed red line: L1 cache size.}
+  \caption{Cache misses on Mira for all 4 test cases (low to high degrees of freedom in direction of the arrow). Percentage of load operations for data and instructions. Dashed red line: L1 cache size. }
    \label{fig:cachemisses}
 \end{figure}
 
