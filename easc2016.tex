@@ -350,6 +350,20 @@ Ignoring boundary conditions and other numerical technicalities available in \ci
  \frac{1}{Re}\Delta \mathbf{u}^{n}- \frac{b_0}{\Delta t} \mathbf{u}^{n} & = & \nabla p^{n} + \mathbf{F}_n ( \mathbf{u}, \mathbf f)  +\sum\limits_{j=1}^k \frac{b_j}{\Delta t} \mathbf u^{n-j} . \label{eqn:hmhz_vel}
 \end{eqnarray}
 
+\begin{figure}
+  \centering
+  \subfigure[Partition]{
+  \includegraphics[trim=300 420 800 360,clip,width=\linewidth]{./figures/partition2.png}
+  \label{fig:partition_vis}
+  }
+  \subfigure[Velocity magnitude]{
+  \includegraphics[trim=300 420 800 360,clip,width=\linewidth]{./figures/vel_magn.png}
+  \label{fig:flow_vis}
+  }
+  \caption{Partition of the elements on $64$ processes and velocity magnitude in the pipe ($Re_{\tau}=180$).}
+  \label{fig:partition}
+\end{figure}
+
 As it can be observed, solving the incompressible Navier-Stokes equations is reduced 
 to the evaluation of $\mathbf{F}_n$ in \refeqn{eqn:discrete}, followed by one Poisson 
 equation and a Helmholtz equation thereafter for each velocity component (2 in 2D and 3 in 3D). 
@@ -404,23 +418,11 @@ few degrees of freedom per processor \cite{LottesAMG}. %is an algebraic multigri
 
 \subsubsection{Mesh and mapping}
 \label{sec:code}
+
 The geometry is meshed using hexahedral elements, partitioned for parallel
 computation using a spectral bisection algorithm as implemented in ``genmap''
 which accompanies the code Nek5000 \cite{argonne:nekdoc}. An example of the
 partitioning for the case $Re_{\tau} = 180$ run on $64$ cores is shown in \reffig{fig:partition_vis}, where each element is colored according to the MPI rank it belongs to. We note that the partitioning is done at the element level and not finer.
-\begin{figure}
-  \centering
-  \subfigure[Partition]{
-  \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/partition2.png}
-  \label{fig:partition_vis}
-  }
-  \subfigure[Velocity magnitude]{
-  \includegraphics[trim=300 400 800 350,clip,width=\linewidth]{./figures/vel_magn.png}
-  \label{fig:flow_vis}
-  }
-  \caption{Partition of the elements on $64$ processes and velocity magnitude in the pipe ($Re_{\tau}=180$).}
-  \label{fig:partition}
-\end{figure}
  
 \subsubsection{Code structure}
 \label{sec:code}
@@ -435,20 +437,6 @@ Different choices for the factors $h_1$ and $h_2$ yield either the Poisson equat
 Hp &=& (A)[p]=f_p, \quad (h_1=1, h_2=0)\\
 Hu &=&(\frac{1}{Re}A -\frac{b_0}{\Delta t} B )[u]=f_u, \quad (h_1=1, h_2=-\frac{b_0}{\Delta t}).
 \end{eqnarray}
-
-By virtue of the method of projections, we do not solve $Hp=f_p$ or $Hu=f_u$, but 
-rather $H\delta p=\delta f_p$ and $H\delta u=\delta f_u$, where $\delta f_p$ and 
-$\delta f_u$ are the rejections of $f_p$ and $f_u$ respectively. Details on the 
-technicalities of this are abundant in \cite{Fischer1998}. The first step is to 
-compute the corresponding right hand sides and then project them onto a subspace 
-of previous solutions (subspaces are denoted by $X$ and the size of the space is $L$).
- The corrections $\delta p$ and $\delta u$ are then computed by solving the Helmholtz 
-equation for the rejections and added to the previous solution. A simplified structure 
-for the Helmholtz solver is shown in \refalg{alg:helmholtz}. The Poisson equation for
-the pressure is solved with the GMRES method. The pressure solve also includes the
-computation of the preconditioner based on the Schwarz overlapping method and 
-coarse grid solve, which is not the case for the velocity and constitutes an 
-important part of the work and communication. The Helmholtz equation is solved using the CG method for each component of the velocity.
 
 \begin{algorithm}
 \begin{algorithmic}
@@ -476,6 +464,20 @@ important part of the work and communication. The Helmholtz equation is solved u
 \caption{Main solver.}
 \label{alg:code_struct}
 \end{algorithm}
+
+By virtue of the method of projections, we do not solve $Hp=f_p$ or $Hu=f_u$, but 
+rather $H\delta p=\delta f_p$ and $H\delta u=\delta f_u$, where $\delta f_p$ and 
+$\delta f_u$ are the rejections of $f_p$ and $f_u$ respectively. Details on the 
+technicalities of this are abundant in \cite{Fischer1998}. The first step is to 
+compute the corresponding right hand sides and then project them onto a subspace 
+of previous solutions (subspaces are denoted by $X$ and the size of the space is $L$).
+ The corrections $\delta p$ and $\delta u$ are then computed by solving the Helmholtz 
+equation for the rejections and added to the previous solution. A simplified structure 
+for the Helmholtz solver is shown in \refalg{alg:helmholtz}. The Poisson equation for
+the pressure is solved with the GMRES method. The pressure solve also includes the
+computation of the preconditioner based on the Schwarz overlapping method and 
+coarse grid solve, which is not the case for the velocity and constitutes an 
+important part of the work and communication. The Helmholtz equation is solved using the CG method for each component of the velocity.
 
 \begin{algorithm}
 \begin{algorithmic}
@@ -608,7 +610,7 @@ programming environment version $5.2.26$.
 \begin{figure}
   \centering
   \subfigure[Ping-pong and all-reduce on Mira as illustrated in \cite{fischer:scaling}]{
-  \includegraphics[width=\linewidth]{./figures/pingpong_mira.png}
+  \includegraphics[trim=40 0 40 27,clip,width=\linewidth]{./figures/pingpong_mira.png}
   \label{fig:pingpong_mira}
   }
   \subfigure[Ping-pong on Titan]{
@@ -979,7 +981,7 @@ as work is distributed according to the ratio $\frac{N}{P}$.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{./figures/cachearrow.eps}
+  \includegraphics[trim=0 4 0 20,clip,width=\linewidth]{./figures/cachearrow.eps}
   \caption{Cache misses on Mira for all 4 test cases (low to high degrees of freedom in direction of the arrow). Percentage of load operations for data and instructions. Dashed red line: L1 cache size. }
    \label{fig:cachemisses}
 \end{figure}
@@ -1080,13 +1082,14 @@ distribution of the execution time. The histogram includes the imbalance of
 the workload as well as the resulting imbalance in the communication.
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{./figures/loadbalance.eps}
+  \includegraphics[trim=0 2 0 25,clip,width=\linewidth]{./figures/loadbalance.eps}
   \caption{Histogram of the load imbalance at $2.184\times10^9$ degrees of freedom: number of processes per time spent in communication. Red bins: \% of processes at the lowest per core load, blue bins: \% of processes at highest per core load.}
   \label{fig:imbalancehist}
 \end{figure}
 
 \subsection{Weak scaling}
 % Weak scaling
+
 As a byproduct of our analysis we can mimic a weak scaling analysis by stacking up 
 all problem sizes at every MPI rank count. On Mira the communication is mostly 
 latency bound with a small influence from the
@@ -1094,20 +1097,15 @@ bandwidth. This holds also true for peer to peer communication as well as for th
 all-reduce (see \reffig{fig:pingpong}). Across the four test cases we can observe 
 a weak scaling in \reffig{fig:weakscaling}. It proves that the scaling on Mira is 
 mainly dependent on the ratio $\frac{N}{P}$. 
+
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{./figures/weak.png}
+  \includegraphics[trim=0 5 0 25,clip,width=\linewidth]{./figures/weak.png}
   \caption{Weak Scaling: For a fixed $\frac{N}{P}$, the same runtime is
   observed across the four test cases, colorbar : total time (seconds).}
   \label{fig:weakscaling}
 \end{figure}
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{./figures/projections.eps}
-  \caption{Convergence of solution with increase of projections space $L$ (green: $L=5$, red $L=0$).}
-  \label{fig:projections}
-\end{figure}
 \subsection{Time to solution}
 Although we focus on parallelism and performance across a high number of
 processes the most important feature of a CFD code remains, in practice, the
@@ -1121,6 +1119,13 @@ increase the projections space $L$. Compared to the reported results in
 eliminates the spikes in convergence. As we mentioned before, the memory
 footprint of Nek5000 is roughly 500 fields. Thus the additional memory
 requirement of the projections is currently of little relevance. 
+
+\begin{figure}
+  \centering
+  \includegraphics[trim=0 2 0 25,clip,width=\linewidth]{./figures/projections.eps}
+  \caption{Convergence of solution with increase of projections space $L$ (green: $L=5$, red $L=0$).}
+  \label{fig:projections}
+\end{figure}
 
 
 \section{Conclusion}
