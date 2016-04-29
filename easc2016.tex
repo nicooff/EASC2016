@@ -329,7 +329,8 @@ term. The Reynolds number
 $Re = \frac{U L}{\nu}$ is expressed as a function of a typical velocity scale $U$,
 length scale $L$ and kinematic viscosity $\nu$. \refeqn{eqn:NS_momentum} 
 and \refeqn{eqn:NS_continuity} are called the continuity and momentum equations 
-respectively. There are two main solvers, called PNPN ($\mathbb{P}_N-\mathbb{P}_N$) and PNPN-2($\mathbb{P}_N-\mathbb{P}_{N-2}$), available within 
+respectively. There are two main solvers, called PNPN ($\mathbb{P}_N-\mathbb{P}_N$) and PNPN-2 
+($\mathbb{P}_N-\mathbb{P}_{N-2}$), available within 
 Nek5000 for computing the solution of the incompressible 
 Navier-Stokes equations, and of these one is also amenable to non-divergence free 
 flows, as available in \cite{Tomboulides1997}, namely $\mathbb{P}_N-\mathbb{P}_N$. Although we operate in the incompressible
@@ -677,7 +678,7 @@ function. The sampling procedure ensures a very low overhead. We also tested the
 tracing procedure, where all function calls are traced, available with Craypat 
 but overhead in time was about $50\%$ and the method was abandoned.
 
-\subsection{Test Case: pipe flow}
+\subsection{Test case : pipe flow}
 \label{sec:pipe}
 
 The test case considered is the turbulent flow in a straight pipe. A thorough 
@@ -943,7 +944,7 @@ is consistent with the values for the non-dimensional latency $\alpha$
 %and inverse bandwidth $\beta$ 
 from \reftab{tab:alpha_beta}. Indeed Beskow has faster CPUs, thus having a
 lower value for $t_a$. This leads to a higher $\alpha$, although the values for
-$\alpha*$ are realatively comparable for Titan, Mira and Beskow. %\footnote{this demands a bit scrutiny}
+$\alpha*$ are relatively comparable for Titan, Mira and Beskow. %\footnote{this demands a bit scrutiny}
 
 As an intermediate conclusion, we note that the scalability limit on Mira and Beskow is almost independent of the problem size and number of cores that are used. 
 
@@ -1021,7 +1022,7 @@ for a large number of cores, after the strong scaling limit has been reached.
 For this case, computation time is almost unaffected by the method and the better perfomance
 of XXT is attributed to a lower communication. For the cases $Re_{\tau}=360$ and 
 $550$ on Mira and Beskow, compute time is noticeably lower for AMG than XXT by
-about a factor $5-10\%$. For $Re_{\tau}=550$ on Mira, computation time is also lower
+about $5-10\%$. For $Re_{\tau}=550$ on Mira, computation time is also lower
 for AMG. This leads to the clear conclusion that AMG for this case on this computer
 is systematically better by about $10\%$. However, no such incisive conclusion can be drawn for the other
 cases because of varying communication times. For $Re_{\tau}=1000$ on Beskow, 
